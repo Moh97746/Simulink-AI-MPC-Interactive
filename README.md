@@ -5,7 +5,7 @@
 
   **A Professional Publication-Ready Diagram Generator & Interactive Offline Simulation Tracker.**
 
-  [![View Interactive Simulation](https://img.shields.io/badge/▶️_Launch_Interactive_Simulation-059669?style=for-the-badge)](https://htmlpreview.github.io/?https://github.com/Marco9249/Simulink-AI-MPC-Interactive/blob/main/04_Interactive_Explanation.html)
+  [![View Interactive Simulation](https://img.shields.io/badge/▶️_Launch_Interactive_Simulation-059669?style=for-the-badge)](https://Marco9249.github.io/Simulink-AI-MPC-Interactive/)
 </div>
 
 ---
