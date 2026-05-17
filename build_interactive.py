@@ -142,6 +142,12 @@ html_template = """<!DOCTYPE html>
                     <button class="btn-export" style="margin-top: 8px; background: #475569;" onclick="exportSVG()">📥 تصدير SVG الأصلي</button>
                     <hr style="margin: 10px 0; border: 0; border-top: 1px solid #E2E8F0; width: 100%;">
                     <button class="btn-export" id="langToggle" style="margin-top: 0; background: #0F172A;" onclick="toggleLanguage()">🌐 English</button>
+                    <hr style="margin: 10px 0; border: 0; border-top: 1px solid #E2E8F0; width: 100%;">
+                    <div style="font-size: 11px; color: #94A3B8; text-align: center; line-height: 1.8;">
+                        <div style="font-weight: bold; color: #64748B; margin-bottom: 4px;">📬 Contact</div>
+                        <a href="mailto:izzeldeenm@gmail.com" style="color: #3B82F6; text-decoration: none;">izzeldeenm@gmail.com</a><br>
+                        <a href="tel:+249129712055" style="color: #3B82F6; text-decoration: none;">+249 129 712 055</a>
+                    </div>
                 </div>
             </div>
             <button id="simBtn" class="btn-sim" onclick="toggleSimulation()">▶ تشغيل المحاكاة</button>
