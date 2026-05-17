@@ -1,40 +1,127 @@
-<div align="center">
-  <img src="01_Root_Level_Final.png" alt="Simulink Architecture" width="100%">
+# 🔧 Simulink → Interactive Web Diagram Skill
 
-  # ⚡ Simulink Hybrid AI-MPC Control Diagram Reconstructor
+> **AI Agent Skill** for converting any MATLAB Simulink `.slx` model into a professional, interactive, bilingual (AR/EN) web-based visualization — deployable as a single static HTML file.
 
-  **A Professional Publication-Ready Diagram Generator & Interactive Offline Simulation Tracker.**
-
-  [![View Interactive Simulation](https://img.shields.io/badge/▶️_Launch_Interactive_Simulation-059669?style=for-the-badge)](https://Marco9249.github.io/Simulink-AI-MPC-Interactive/)
-</div>
+[![Live Demo](https://img.shields.io/badge/🌐_Live_Demo-Click_Here-2563EB?style=for-the-badge)](https://Marco9249.github.io/Simulink-AI-MPC-Interactive/)
 
 ---
 
-## 🎯 Overview
+## 🎯 What This Skill Does
 
-This project programmatically transforms complex raw Simulink systems into **IEEE Publication-Ready** high-fidelity SVG/PNG graphics using Python's `matplotlib`. It organizes chaotic plant and control logic into a strict **Two-Tier Architecture** (Physical Plant vs. Control & AI).
-
-Beyond static rendering, the project generates a **Zero-Dependency Interactive HTML Interface** that allows users to:
-1. **Explore:** Click on any physical or logical block to view detailed Arabic academic explanations.
-2. **Simulate:** Run an **Auto-Tracking Animated Simulation** that visually traces energy and signal flow across wires and components using glowing CSS animations and smooth camera panning.
-
-## ✨ Features
-
-- **High-Fidelity Rendering:** Generates 300 DPI graphics with precise LaTeX (`MathText`) formatting, orthogonal signal routing, and academic standard color palettes.
-- **Standalone Interactive UI:** Embeds SVGs directly into a single `HTML` file—no servers, no external dependencies, bypassing CORS completely.
-- **Signal Flow Simulation:** Implements a multi-phase animated signal tracker. Wires glow and "flow" using `stroke-dasharray` while an auto-panning camera follows the action step-by-step.
-- **Manual Pan & Zoom:** Native, lightweight JavaScript implementation allowing users to freely drag and scroll-to-zoom across the diagrams.
-
-## 🏗️ Architecture
-
-You can view the comprehensive project architecture and codebase structure in the documentation:
-👉 [**Project Architecture Tree (Mermaid)**](Project_Architecture_Tree.md)
-
-## 📂 Included Diagrams
-
-1. **Root Level Diagram:** The main integration of the physical water tank plant and the predictive controller.
-2. **AI Predictor Subsystem:** The inner mechanics of the Neural Network (PI-HybridNet) and multiplexer logic.
-3. **Water Tank Subsystem:** The physical mass-balance equations, integrators, and saturation bounds.
+| Input | Output |
+|---|---|
+| Any `.slx` Simulink model file | ✅ Professional SVG block diagrams |
+| | ✅ Single-file interactive HTML with animated simulation |
+| | ✅ Bilingual interface (Arabic / English) |
+| | ✅ 8K ultra-resolution PNG export |
+| | ✅ Dark mode, zoom/pan, auto-tracking camera |
+| | ✅ GitHub Pages ready deployment |
 
 ---
-*Generated and architected via Advanced Agentic AI Coding.*
+
+## 📁 Repository Structure
+
+```
+├── draw_light.py           # Core drawing library (matplotlib → SVG)
+├── build_interactive.py    # HTML assembler (injects SVGs + JS interactivity)
+├── slx_parser.py           # Auto-extracts blocks & wires from .slx files
+├── SKILL_GUIDE.md          # Complete step-by-step guide for AI agents
+├── index.html              # Live demo (GitHub Pages)
+│
+└── sample_output/          # Example output from a real Simulink project
+    ├── PV_GHI_System_Mezoo_3.slx    # Original Simulink file
+    ├── gen_light_root.py             # Hand-tuned layout for root diagram
+    ├── gen_light_subs.py             # Hand-tuned layout for subsystems
+    ├── gen_PV_GHI_System_Mezoo_3.py  # Auto-generated layout (by slx_parser)
+    ├── 01_Root_Level_Final.svg       # Generated root diagram
+    ├── 02_AI_BLOCK_Final.svg         # Generated AI subsystem diagram
+    └── 03_Water_Tank_Final.svg       # Generated water tank diagram
+```
+
+---
+
+## 🚀 Quick Start (4 Steps)
+
+### Step 1: Parse your Simulink file
+```bash
+python slx_parser.py your_model.slx
+```
+This auto-generates `gen_your_model.py` with all blocks and wire connections.
+
+### Step 2: Refine the layout
+Open the generated file and adjust `(x, y)` coordinates for professional positioning.
+
+### Step 3: Generate SVG diagrams
+```bash
+python gen_your_model.py
+```
+
+### Step 4: Build the interactive HTML
+Update `build_interactive.py` with your SVG filenames and block explanations, then:
+```bash
+python build_interactive.py
+```
+
+Open `04_Interactive_Explanation.html` in your browser — done! 🎉
+
+---
+
+## ✨ Interactive Features
+
+| Feature | Description |
+|---|---|
+| 🖱️ Click any block | Shows detailed technical explanation in sidebar |
+| ▶️ Run Simulation | Animated signal flow with 7 phases + camera tracking |
+| 🔍 Zoom & Pan | Mouse wheel zoom, drag to pan |
+| 🌐 Language Toggle | Full AR ↔ EN translation (UI + explanations + simulation) |
+| 🌙 Dark Mode | Professional dark theme |
+| 📥 Export 8K PNG | Ultra-high resolution for academic papers |
+| 📥 Export SVG | Vector format for publications |
+| 🗂️ Hide Sidebar | Maximize diagram viewing area |
+| ⏱️ Speed Control | 0.5x to 2x simulation speed |
+
+---
+
+## ⚠️ Critical Rules for AI Agents
+
+### 1. Python `.format()` + JavaScript `{}` Escaping
+The HTML template uses Python's `.format()`. **Every JS brace must be doubled:**
+```python
+# ❌ WRONG — will crash with KeyError
+function test() { return {x: 1}; }
+
+# ✅ CORRECT
+function test() {{ return {{x: 1}}; }}
+```
+
+### 2. Never Use Regex Refactoring
+Do NOT use regex scripts to modify `build_interactive.py`. The mixed Python/JS syntax makes regex replacements extremely dangerous.
+
+### 3. SVG Must Be Cleaned
+Strip `width` and `height` attributes from matplotlib SVGs for responsive display.
+
+### 4. Block IDs Are Mandatory
+Every `draw_block()` must have a `gid='block_name'` matching an entry in the `explanations` dictionary.
+
+---
+
+## 📖 Full Documentation
+
+See **[SKILL_GUIDE.md](SKILL_GUIDE.md)** for the complete guide including:
+- Detailed architecture explanation
+- All API references for `draw_light.py`
+- Error troubleshooting table
+- Bilingual support patterns
+- Export resolution configuration
+
+---
+
+## 📬 Contact
+
+**izzeldeenm@gmail.com**
+
+---
+
+## 📄 License
+
+MIT License — Free to use for academic and commercial projects.
