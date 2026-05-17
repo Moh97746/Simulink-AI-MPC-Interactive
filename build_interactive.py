@@ -52,6 +52,13 @@ for i in range(3): explanations[f'block_tmp_{i}'] = {'title': f'Temp Day {i+1}',
 for i in range(3): explanations[f'ai_ghi_fut_{i}'] = {'title': f'Future GHI {i+1}', 'text': 'بيانات مستقبلية نظرية.'}
 for i in range(3): explanations[f'ai_hist_{i}'] = {'title': f'Historical Data {i+1}', 'text': 'بيانات تاريخية كمرجع للشبكة.'}
 
+# Mirror vertical blocks
+vertical_explanations = {}
+for k, v in explanations.items():
+    if k.startswith('block_') or k.startswith('path_') or k.startswith('ai_') or k.startswith('wt_'):
+        vertical_explanations['v_' + k] = v
+explanations.update(vertical_explanations)
+
 html_template = """<!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
@@ -110,6 +117,13 @@ html_template = """<!DOCTYPE html>
             transition: 0.3s;
         }}
         
+        .telemetry-overlay {{ position: absolute; top: 120px; left: 30px; background: rgba(15, 23, 42, 0.85); color: #F8FAFC; padding: 20px; border-radius: 12px; font-family: monospace; font-size: 16px; border: 1px solid #334155; box-shadow: 0 10px 25px rgba(0,0,0,0.2); z-index: 50; display: flex; flex-direction: column; gap: 10px; transition: 0.3s; backdrop-filter: blur(4px); }}
+        .telemetry-item {{ display: flex; justify-content: space-between; gap: 20px; }}
+        .telemetry-val {{ font-weight: bold; color: #10B981; }}
+        
+        body.cloudy-mode .flowing-path {{ stroke: #94A3B8 !important; filter: drop-shadow(0 0 4px rgba(148, 163, 184, 0.8)); }}
+        body.cloudy-mode .flowing-block {{ stroke: #94A3B8 !important; filter: drop-shadow(0 0 4px rgba(148, 163, 184, 0.8)); }}
+        
         /* Control Center Styles */
         .btn-ctrl {{ background: #F1F5F9; color: #475569; border: 1px solid #CBD5E1; padding: 10px 15px; border-radius: 6px; font-weight: bold; cursor: pointer; transition: 0.2s; }}
         .btn-ctrl:hover {{ background: #E2E8F0; }}
@@ -134,6 +148,9 @@ html_template = """<!DOCTYPE html>
                 <div id="ctrl-panel" class="ctrl-panel">
                     <label><input type="checkbox" id="autoCam" checked> 🎥 كاميرا التتبع التلقائي</label>
                     <label><input type="checkbox" id="toggleSidebar" checked onchange="document.getElementById('sidebar').style.display = this.checked ? 'flex' : 'none'"> 🗂️ عرض شريط الشرح</label>
+                    <label><input type="checkbox" id="toggleVertical" onchange="toggleVerticalLayout(this.checked)"> 📄 التخطيط العمودي (Vertical)</label>
+                    <label><input type="checkbox" id="toggleTelemetry" checked onchange="document.getElementById('telemetry-box').style.display = this.checked ? 'flex' : 'none'"> 📊 لوحة القياسات الحية</label>
+                    <label><input type="checkbox" id="toggleWeather" onchange="document.body.classList.toggle('cloudy-mode', this.checked)"> ☁️ محاكاة يوم غائم</label>
                     <hr style="margin: 10px 0; border: 0; border-top: 1px solid #E2E8F0; width: 100%;">
                     <div style="margin-bottom: 5px; font-weight: bold; color: #475569; font-size: 13px;">⏱️ سرعة المحاكاة</div>
                     <input type="range" id="simSpeed" min="0.5" max="2" step="0.5" value="1" style="width: 100%; direction: ltr;">
@@ -146,8 +163,17 @@ html_template = """<!DOCTYPE html>
         </div>
         
         <div class="svg-container active" id="tab0"><div class="zoom-wrapper" id="zoom0">{SVG_ROOT}</div></div>
+        <div class="svg-container" id="tab0_v"><div class="zoom-wrapper" id="zoom0_v">{SVG_ROOT_V}</div></div>
         <div class="svg-container" id="tab1"><div class="zoom-wrapper" id="zoom1">{SVG_AI}</div></div>
         <div class="svg-container" id="tab2"><div class="zoom-wrapper" id="zoom2">{SVG_WT}</div></div>
+        
+        <div id="telemetry-box" class="telemetry-overlay">
+            <div style="color: #60A5FA; font-weight: bold; border-bottom: 1px solid #334155; padding-bottom: 5px; margin-bottom: 5px;">LIVE TELEMETRY</div>
+            <div class="telemetry-item"><span>GHI:</span> <span id="tel-ghi" class="telemetry-val">0 W/m²</span></div>
+            <div class="telemetry-item"><span>Temp:</span> <span id="tel-temp" class="telemetry-val">25 °C</span></div>
+            <div class="telemetry-item"><span>Q_ref:</span> <span id="tel-qref" class="telemetry-val">0.0 L/s</span></div>
+            <div class="telemetry-item"><span>H(t):</span> <span id="tel-h" class="telemetry-val">3.50 m</span></div>
+        </div>
     </div>
     
     <div id="sidebar">
@@ -272,79 +298,108 @@ html_template = """<!DOCTYPE html>
 
         function startRootSimulation() {{
             stopSimulation();
-            switchTab(0);
+            const isVertical = document.getElementById('toggleVertical').checked;
+            switchTab(isVertical ? '0_v' : 0);
+            
+            const isCloudy = document.getElementById('toggleWeather').checked;
+            document.getElementById('tel-ghi').innerText = '0 W/m²';
+            document.getElementById('tel-temp').innerText = '25 °C';
+            document.getElementById('tel-qref').innerText = '0.0 L/s';
+            document.getElementById('tel-h').innerText = '3.50 m';
             
             const speed = parseFloat(document.getElementById('simSpeed').value) || 1;
             const dt = 1 / speed;
             
             // Phase 1
             simIntervals.push(setTimeout(() => {{
-                flyTo(250, 50, 1.3, 0);
+                if(!isVertical) flyTo(250, 50, 1.3, 0); else flyTo(0, 300, 1.2, '0_v');
                 addFlow('[id^="path_in_"], [id^="path_ghi"], [id^="path_temp"], [id^="path_day_"]');
-                addFlow('#block_mux_1, #block_mux_2, #block_day_root', 'block');
+                addFlow('[id^="v_path_in_"], [id^="v_path_ghi"], [id^="v_path_temp"], [id^="v_path_day"]');
+                addFlow('#block_mux_1, #block_mux_2, #block_day_root, #v_block_mux_1, #v_block_mux_2, #v_block_day_root', 'block');
+                document.getElementById('tel-ghi').innerText = isCloudy ? '250 W/m²' : '850 W/m²';
                 updateSimText('المرحلة 1: تجميع الإشارات', 'يتم التقاط قراءات الإشعاع الشمسي والحرارة وتمريرها عبر الـ Multiplexers نحو الطبقة الفيزيائية. كما يتم اختيار اليوم المطلوب وارساله للذكاء الاصطناعي.');
             }}, 500 * dt));
 
             // Phase 2
             simIntervals.push(setTimeout(() => {{
-                flyTo(150, -150, 1.4, 0);
-                addFlow('#block_ai', 'block');
-                addFlow('[id^="path_ai_"]');
+                if(!isVertical) flyTo(150, -150, 1.4, 0); else flyTo(0, 100, 1.2, '0_v');
+                addFlow('#block_ai, #v_block_ai', 'block');
+                addFlow('[id^="path_ai_"], [id^="v_path_ai_"]');
                 updateSimText('المرحلة 2: التنبؤ (الذكاء الاصطناعي)', 'يستقبل الذكاء الاصطناعي بيانات اليوم ويبدأ بحساب الإشعاع المتوقع GHI_pred وتمريره لمدير التحكم.');
             }}, 3500 * dt));
 
             // Phase 3
             simIntervals.push(setTimeout(() => {{
-                flyTo(-100, -150, 1.4, 0);
-                addFlow('#block_mpc_mgr', 'block');
-                addFlow('[id^="path_mgr_"]');
-                addFlow('[id^="path_clock"], #block_time_root', 'block');
+                if(!isVertical) flyTo(-100, -150, 1.4, 0); else flyTo(0, 50, 1.2, '0_v');
+                addFlow('#block_mpc_mgr, #v_block_mpc_mgr', 'block');
+                addFlow('[id^="path_mgr_"], [id^="v_path_mgr"]');
+                addFlow('[id^="path_clock"], #block_time_root, [id^="v_path_clock"], #v_block_time_root', 'block');
+                document.getElementById('tel-qref').innerText = isCloudy ? '1.8 L/s' : '4.2 L/s';
                 updateSimText('المرحلة 3: التوجيه المرجعي', 'يحسب المدير المرجعي MPC Manager التدفق المستهدف (Q_ref) ويرسله كإشارة تغذية أمامية (Feedforward) للعاكس مباشرة، وكهدف للمتحكم السفلي.');
             }}, 6500 * dt));
 
             // Phase 4
             simIntervals.push(setTimeout(() => {{
-                flyTo(-300, -150, 1.4, 0);
-                addFlow('#block_mpc_ctrl', 'block');
-                addFlow('[id^="path_mpc_cmd"]');
+                if(!isVertical) flyTo(-300, -150, 1.4, 0); else flyTo(0, -50, 1.2, '0_v');
+                addFlow('#block_mpc_ctrl, #v_block_mpc_ctrl', 'block');
+                addFlow('[id^="path_mpc_cmd"], [id^="v_path_mpc_cmd"]');
                 updateSimText('المرحلة 4: الحسابات الرياضية (التحكم)', 'يقوم متحكم MPC Controller بحل معادلات Optimization معقدة لضمان استقرار الخزان والمضخة معاً، ثم يصدر إشارة التحكم (Command) لمتحكم الفولتية.');
             }}, 9500 * dt));
 
             // Phase 5
             simIntervals.push(setTimeout(() => {{
-                flyTo(-150, 150, 1.3, 0);
-                addFlow('#block_pv, #block_fopid, #block_vfd, #block_pump', 'block');
-                addFlow('[id^="path_pv"], [id^="path_fopid"], [id^="path_vfd"], [id^="path_pump"]');
+                if(!isVertical) flyTo(-150, 150, 1.3, 0); else flyTo(0, -150, 1.2, '0_v');
+                addFlow('#block_pv, #block_fopid, #block_vfd, #block_pump, #v_block_pv, #v_block_fopid, #v_block_vfd, #v_block_pump', 'block');
+                addFlow('[id^="path_pv"], [id^="path_fopid"], [id^="path_vfd"], [id^="path_pump"], [id^="v_path_pv"], [id^="v_path_fopid"], [id^="v_path_pump"]');
                 updateSimText('المرحلة 5: تشغيل المضخة وتدفق الطاقة', 'يتم استخراج الطاقة من اللوح الشمسي P_pv، ثم تتولى الـ FOPID تنقية الطاقة الذاهبة للـ VFD لتشغيل المضخة وإنتاج التدفق Q_raw.');
             }}, 12500 * dt));
 
             // Phase 6
             simIntervals.push(setTimeout(() => {{
-                flyTo(-450, 50, 1.4, 0);
-                addFlow('#block_gain_root, #block_tank, #block_demand', 'block');
-                addFlow('[id^="path_gain"], [id^="path_tank_out"], [id^="path_demand"]');
-                addFlow('[id^="path_fb_"]');
-                addFlow('#block_delay_root', 'block');
+                if(!isVertical) flyTo(-450, 50, 1.4, 0); else flyTo(0, -300, 1.2, '0_v');
+                addFlow('#block_gain_root, #block_tank, #block_demand, #v_block_gain_root, #v_block_tank, #v_block_demand', 'block');
+                addFlow('[id^="path_gain"], [id^="path_tank_out"], [id^="path_demand"], [id^="v_path_gain"], [id^="v_path_demand"]');
+                addFlow('[id^="path_fb_"], [id^="v_path_fb_"]');
+                addFlow('#block_delay_root, #v_block_delay_root', 'block');
+                
+                let hLevel = 3.50;
+                let targetH = isCloudy ? 3.75 : 4.20;
+                const hInterval = setInterval(() => {{
+                    hLevel += 0.05;
+                    document.getElementById('tel-h').innerText = hLevel.toFixed(2) + ' m';
+                    if(hLevel >= targetH) clearInterval(hInterval);
+                }}, 100);
+                simIntervals.push(hInterval);
+                
                 updateSimText('المرحلة 6: موازنة الخزان والتغذية الراجعة', 'يصل التدفق للخزان، وتُحسب الزيادة في المنسوب H(t). ثم تعود الإشارة كـ Feedback في المسار السفلي الطويل وتمر عبر الـ Delay استعداداً للثانية القادمة.');
             }}, 15500 * dt));
             
             // Phase 7 Reset View
             simIntervals.push(setTimeout(() => {{
-                flyTo(0, 0, 1, 0);
+                if(!isVertical) flyTo(0, 0, 1, 0); else flyTo(0, 0, 1, '0_v');
                 updateSimText('اكتملت المحاكاة', 'دورة التحكم اكتملت بنجاح. يمكنك إعادة التشغيل أو التصفح الحُر.');
                 document.getElementById('simBtn').innerHTML = '▶ إعادة المحاكاة';
                 document.getElementById('simBtn').classList.remove('running');
                 isSimulating = false;
             }}, 21000 * dt));
         }}
+        
+        function toggleVerticalLayout(isVertical) {{
+            if(isVertical) {{
+                switchTab('0_v');
+            }} else {{
+                switchTab(0);
+            }}
+        }}
         // Pan and Zoom Logic
-        let scales = [1, 1, 1];
-        let translates = [{{x:0, y:0}}, {{x:0, y:0}}, {{x:0, y:0}}];
+        let scales = {'0': 1, '1': 1, '2': 1, '0_v': 1};
+        let translates = {'0': {x:0, y:0}, '1': {x:0, y:0}, '2': {x:0, y:0}, '0_v': {x:0, y:0}};
         let isPanning = false;
         let startX = 0, startY = 0;
         let currentTabIndex = 0;
 
-        document.querySelectorAll('.svg-container').forEach((container, index) => {{
+        document.querySelectorAll('.svg-container').forEach((container) => {{
+            const index = container.id.replace('tab', '');
             const wrapper = document.getElementById('zoom' + index);
             
             container.addEventListener('mousedown', (e) => {{
@@ -480,11 +535,13 @@ def read_svg(filename):
         return clean_svg(f.read())
 
 svg_root = read_svg('01_Root_Level_Final.svg')
+svg_root_v = read_svg('01_Root_Level_Vertical_Final.svg')
 svg_ai = read_svg('02_AI_BLOCK_Final.svg')
 svg_wt = read_svg('03_Water_Tank_Final.svg')
 
 html_content = html_template.format(
     SVG_ROOT=svg_root,
+    SVG_ROOT_V=svg_root_v,
     SVG_AI=svg_ai,
     SVG_WT=svg_wt,
     EXPLANATIONS_JSON=json.dumps(explanations, ensure_ascii=False)
