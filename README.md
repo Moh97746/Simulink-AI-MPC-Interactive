@@ -1,127 +1,72 @@
-# 🔧 Simulink → Interactive Web Diagram Skill
+<div align="center">
+  
+# ⚙️ Simulink-to-Web Interactive Skill
+### Professional Agentic Skill for Converting MATLAB Simulink Models into Interactive Web Diagrams
 
-> **AI Agent Skill** for converting any MATLAB Simulink `.slx` model into a professional, interactive, bilingual (AR/EN) web-based visualization — deployable as a single static HTML file.
+[![Live Demo](https://img.shields.io/badge/🚀_Live_Interactive_Demo-Click_Here-2563EB?style=for-the-badge&logo=html5)](https://Marco9249.github.io/Simulink-AI-MPC-Interactive/)
 
-[![Live Demo](https://img.shields.io/badge/🌐_Live_Demo-Click_Here-2563EB?style=for-the-badge)](https://Marco9249.github.io/Simulink-AI-MPC-Interactive/)
+</div>
 
 ---
 
-## 🎯 What This Skill Does
+## 🌟 Overview
 
-| Input | Output |
-|---|---|
-| Any `.slx` Simulink model file | ✅ Professional SVG block diagrams |
-| | ✅ Single-file interactive HTML with animated simulation |
-| | ✅ Bilingual interface (Arabic / English) |
-| | ✅ 8K ultra-resolution PNG export |
-| | ✅ Dark mode, zoom/pan, auto-tracking camera |
-| | ✅ GitHub Pages ready deployment |
+**Simulink-to-Web** is an advanced AI Agent Skill designed to automatically parse, layout, and convert any MATLAB Simulink (`.slx`) file into a highly professional, interactive, and animated HTML web page. 
+
+This repository serves as the home for the skill's source code, alongside a **fully functional demonstration** of a complex AI-MPC Solar Water Pumping project generated entirely by this skill.
+
+### 🎯 What This Skill Does
+
+1. **Auto-Parsing:** Extracts blocks, subsystems, and wiring directly from `.slx` files.
+2. **Vector Graphics (SVG):** Generates publication-quality, scalable vector diagrams.
+3. **Interactive UI:** Wraps the diagrams in a single-file HTML interface featuring:
+   - 🖱️ **Clickable Elements:** Click any block to view its technical explanation.
+   - ▶️ **Animated Simulation:** Visualizes signal and power flow with camera tracking.
+   - 🌐 **Bilingual Support (i18n):** Real-time toggle between English and Arabic.
+   - 🌙 **Dark Mode:** Elegant dark theme for comfortable viewing.
+   - 📥 **8K Export:** Ultra-high resolution PNG exports for academic papers.
+
+---
+
+## 🚀 Live Demonstration
+
+The `index.html` file in this repository is the output of this skill applied to a complex **Simulink AI-MPC Solar Water Pumping System**. 
+
+👉 **[Click Here to Experience the Live Demo](https://Marco9249.github.io/Simulink-AI-MPC-Interactive/)**
 
 ---
 
 ## 📁 Repository Structure
 
-```
-├── draw_light.py           # Core drawing library (matplotlib → SVG)
-├── build_interactive.py    # HTML assembler (injects SVGs + JS interactivity)
-├── slx_parser.py           # Auto-extracts blocks & wires from .slx files
-├── SKILL_GUIDE.md          # Complete step-by-step guide for AI agents
-├── index.html              # Live demo (GitHub Pages)
-│
-└── sample_output/          # Example output from a real Simulink project
-    ├── PV_GHI_System_Mezoo_3.slx    # Original Simulink file
-    ├── gen_light_root.py             # Hand-tuned layout for root diagram
-    ├── gen_light_subs.py             # Hand-tuned layout for subsystems
-    ├── gen_PV_GHI_System_Mezoo_3.py  # Auto-generated layout (by slx_parser)
-    ├── 01_Root_Level_Final.svg       # Generated root diagram
-    ├── 02_AI_BLOCK_Final.svg         # Generated AI subsystem diagram
-    └── 03_Water_Tank_Final.svg       # Generated water tank diagram
+To keep the workspace clean and focused solely on the skill, this repository contains **only the essential toolset** and the final generated interactive demo:
+
+```text
+├── draw_light.py           # 🎨 Core vector drawing library (matplotlib → SVG)
+├── slx_parser.py           # 🔍 Auto-extractor for reading Simulink .slx files
+├── build_interactive.py    # 🏗️ HTML assembler (injects SVGs + JS interactivity + i18n)
+├── SKILL_GUIDE.md          # 📖 Comprehensive manual and prompt-guide for AI Agents
+├── index.html              # 🌐 The final interactive demo (GitHub Pages)
+└── README.md               # ℹ️ This documentation
 ```
 
 ---
 
-## 🚀 Quick Start (4 Steps)
+## 🛠️ How to Use (For AI Agents & Developers)
 
-### Step 1: Parse your Simulink file
-```bash
-python slx_parser.py your_model.slx
-```
-This auto-generates `gen_your_model.py` with all blocks and wire connections.
+If you are an AI assistant or a developer looking to use this skill on a new `.slx` file, follow the detailed instructions in the **[SKILL_GUIDE.md](SKILL_GUIDE.md)**.
 
-### Step 2: Refine the layout
-Open the generated file and adjust `(x, y)` coordinates for professional positioning.
-
-### Step 3: Generate SVG diagrams
-```bash
-python gen_your_model.py
-```
-
-### Step 4: Build the interactive HTML
-Update `build_interactive.py` with your SVG filenames and block explanations, then:
-```bash
-python build_interactive.py
-```
-
-Open `04_Interactive_Explanation.html` in your browser — done! 🎉
+### Quick Workflow:
+1. `python slx_parser.py your_model.slx` → Generates layout script.
+2. Refine the generated Python layout script for perfect block positioning.
+3. Run the layout script to generate `.svg` files.
+4. Add your explanations and translations to `build_interactive.py`.
+5. `python build_interactive.py` → Generates your final `index.html`!
 
 ---
 
-## ✨ Interactive Features
+## 📬 Contact & Author
 
-| Feature | Description |
-|---|---|
-| 🖱️ Click any block | Shows detailed technical explanation in sidebar |
-| ▶️ Run Simulation | Animated signal flow with 7 phases + camera tracking |
-| 🔍 Zoom & Pan | Mouse wheel zoom, drag to pan |
-| 🌐 Language Toggle | Full AR ↔ EN translation (UI + explanations + simulation) |
-| 🌙 Dark Mode | Professional dark theme |
-| 📥 Export 8K PNG | Ultra-high resolution for academic papers |
-| 📥 Export SVG | Vector format for publications |
-| 🗂️ Hide Sidebar | Maximize diagram viewing area |
-| ⏱️ Speed Control | 0.5x to 2x simulation speed |
+Developed with precision for academic and professional engineering visualization.
 
----
-
-## ⚠️ Critical Rules for AI Agents
-
-### 1. Python `.format()` + JavaScript `{}` Escaping
-The HTML template uses Python's `.format()`. **Every JS brace must be doubled:**
-```python
-# ❌ WRONG — will crash with KeyError
-function test() { return {x: 1}; }
-
-# ✅ CORRECT
-function test() {{ return {{x: 1}}; }}
-```
-
-### 2. Never Use Regex Refactoring
-Do NOT use regex scripts to modify `build_interactive.py`. The mixed Python/JS syntax makes regex replacements extremely dangerous.
-
-### 3. SVG Must Be Cleaned
-Strip `width` and `height` attributes from matplotlib SVGs for responsive display.
-
-### 4. Block IDs Are Mandatory
-Every `draw_block()` must have a `gid='block_name'` matching an entry in the `explanations` dictionary.
-
----
-
-## 📖 Full Documentation
-
-See **[SKILL_GUIDE.md](SKILL_GUIDE.md)** for the complete guide including:
-- Detailed architecture explanation
-- All API references for `draw_light.py`
-- Error troubleshooting table
-- Bilingual support patterns
-- Export resolution configuration
-
----
-
-## 📬 Contact
-
-**izzeldeenm@gmail.com**
-
----
-
-## 📄 License
-
-MIT License — Free to use for academic and commercial projects.
+**Email:** izzeldeenm@gmail.com  
+**License:** MIT License
