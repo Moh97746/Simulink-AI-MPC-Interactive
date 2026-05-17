@@ -65,6 +65,24 @@
         .ctrl-panel input[type="checkbox"] { margin-left: 8px; width: 16px; height: 16px; cursor: pointer; }
         .btn-export { background: #2563EB; color: white; border: none; padding: 8px; border-radius: 4px; cursor: pointer; width: 100%; font-weight: bold; transition: 0.2s; }
         .btn-export:hover { opacity: 0.9; transform: scale(1.02); }
+        
+        /* Dark Mode */
+        body.dark { background: #0F172A; color: #E2E8F0; }
+        body.dark #sidebar { background: #1E293B; box-shadow: -2px 0 10px rgba(0,0,0,0.4); }
+        body.dark #sidebar h1 { color: #F1F5F9; border-color: #334155; }
+        body.dark #info-title { color: #60A5FA; }
+        body.dark #info-text { color: #94A3B8; }
+        body.dark .placeholder { color: #64748B; }
+        body.dark #main-content { background: #0F172A; }
+        body.dark .header-bar { background: #1E293B; border-color: #334155; }
+        body.dark .tab { color: #94A3B8; }
+        body.dark .tab:hover { color: #60A5FA; }
+        body.dark .tab.active { color: #60A5FA; border-color: #60A5FA; }
+        body.dark .btn-ctrl { background: #334155; color: #E2E8F0; border-color: #475569; }
+        body.dark .btn-ctrl:hover { background: #475569; }
+        body.dark .ctrl-panel { background: #1E293B; border-color: #334155; }
+        body.dark .ctrl-panel label { color: #CBD5E1; }
+        body.dark svg { background: #1E293B; box-shadow: 0 10px 25px rgba(0,0,0,0.3); }
     </style>
 </head>
 <body>
@@ -80,6 +98,7 @@
                 <div id="ctrl-panel" class="ctrl-panel">
                     <label><input type="checkbox" id="autoCam" checked> 🎥 كاميرا التتبع التلقائي</label>
                     <label><input type="checkbox" id="toggleSidebar" checked onchange="document.getElementById('sidebar').style.display = this.checked ? 'flex' : 'none'"> 🗂️ عرض شريط الشرح</label>
+                    <label><input type="checkbox" id="toggleDark" onchange="document.body.classList.toggle('dark', this.checked)"> 🌙 الوضع الليلي</label>
                     <hr style="margin: 10px 0; border: 0; border-top: 1px solid #E2E8F0; width: 100%;">
                     <div style="margin-bottom: 5px; font-weight: bold; color: #475569; font-size: 13px;">⏱️ سرعة المحاكاة</div>
                     <input type="range" id="simSpeed" min="0.5" max="2" step="0.5" value="1" style="width: 100%; direction: ltr;">
@@ -91,8 +110,7 @@
                     <hr style="margin: 10px 0; border: 0; border-top: 1px solid #E2E8F0; width: 100%;">
                     <div style="font-size: 11px; color: #94A3B8; text-align: center; line-height: 1.8;">
                         <div style="font-weight: bold; color: #64748B; margin-bottom: 4px;">📬 Contact</div>
-                        <a href="mailto:izzeldeenm@gmail.com" style="color: #3B82F6; text-decoration: none;">izzeldeenm@gmail.com</a><br>
-                        <a href="tel:+249129712055" style="color: #3B82F6; text-decoration: none;">+249 129 712 055</a>
+                        <a href="mailto:izzeldeenm@gmail.com" style="color: #3B82F6; text-decoration: none;">izzeldeenm@gmail.com</a>
                     </div>
                 </div>
             </div>
