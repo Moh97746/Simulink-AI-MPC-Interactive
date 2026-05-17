@@ -392,8 +392,8 @@ html_template = """<!DOCTYPE html>
             }}
         }}
         // Pan and Zoom Logic
-        let scales = {'0': 1, '1': 1, '2': 1, '0_v': 1};
-        let translates = {'0': {x:0, y:0}, '1': {x:0, y:0}, '2': {x:0, y:0}, '0_v': {x:0, y:0}};
+        let scales = {{'0': 1, '1': 1, '2': 1, '0_v': 1}};
+        let translates = {{'0': {{x:0, y:0}}, '1': {{x:0, y:0}}, '2': {{x:0, y:0}}, '0_v': {{x:0, y:0}}}};
         let isPanning = false;
         let startX = 0, startY = 0;
         let currentTabIndex = 0;
