@@ -1,62 +1,62 @@
-import os
+﻿import os
 import json
 import re
 
 explanations = {
     # ====== ROOT DIAGRAM ======
-    'block_pv': {'title': 'Solar Power Model (PV Physics)', 'text': 'النموذج الفيزيائي للوح الشمسي. يستقبل الإشعاع والحرارة ويحسب الطاقة الكهربائية P_pv.', 'text_en': 'Physical model of the solar panel. Receives irradiance and temperature to calculate electrical power P_pv.'},
-    'block_fopid': {'title': 'Fractional Order PID', 'text': 'المتحكم التناسبي التكاملي التفاضلي الكسري. يعطي استجابة تحكم مرنة جداً للتيار والطاقة.', 'text_en': 'Fractional Order PID controller. Provides flexible control response for current and power.'},
-    'block_vfd': {'title': 'Variable Frequency Drive', 'text': 'العاكس الذي يمد المضخة بالجهد والتردد المناسبين لتعمل بالكفاءة المطلوبة.', 'text_en': 'Inverter supplying the pump with appropriate voltage and frequency.'},
-    'block_pump': {'title': 'Motor & Pump Drive', 'text': 'المحرك الذي يولد طاقة حركية لضخ المياه بناءً على طاقة العاكس.', 'text_en': 'Motor generating kinetic energy to pump water based on inverter power.'},
-    'block_tank': {'title': 'Water Tank', 'text': 'الخزان. يعتمد على موازنة الكتلة لحساب مستوى المياه.', 'text_en': 'Water tank. Uses mass balance to calculate water level.'},
-    'block_demand': {'title': 'Water Demand Profile', 'text': 'حجم المياه المستهلكة المتغير زمنياً.', 'text_en': 'Time-varying water consumption volume.'},
-    'block_ai': {'title': 'AI Neural Predictor', 'text': 'الشبكة العصبية للتنبؤ بالإشعاع المستقبلي.', 'text_en': 'Neural network for predicting future solar irradiance.'},
-    'block_mpc_mgr': {'title': 'MPC Manager', 'text': 'المدير المرجعي. يحسب المسار المثالي للتحكم.', 'text_en': 'Reference manager. Computes the optimal control trajectory.'},
-    'block_mpc_ctrl': {'title': 'MPC Controller', 'text': 'متحكم الطبقة السفلية. يولد أوامر التحكم بدقة رياضية عالية.', 'text_en': 'Low-level controller. Generates precise mathematical control commands.'},
+    'block_pv': {'title': 'Solar Power Model (PV Physics)', 'text': '╪º┘ä┘å┘à┘ê╪░╪¼ ╪º┘ä┘ü┘è╪▓┘è╪º╪ª┘è ┘ä┘ä┘ê╪¡ ╪º┘ä╪┤┘à╪│┘è. ┘è╪│╪¬┘é╪¿┘ä ╪º┘ä╪Ñ╪┤╪╣╪º╪╣ ┘ê╪º┘ä╪¡╪▒╪º╪▒╪⌐ ┘ê┘è╪¡╪│╪¿ ╪º┘ä╪╖╪º┘é╪⌐ ╪º┘ä┘â┘ç╪▒╪¿╪º╪ª┘è╪⌐ P_pv.'},
+    'block_fopid': {'title': 'Fractional Order PID', 'text': '╪º┘ä┘à╪¬╪¡┘â┘à ╪º┘ä╪¬┘å╪º╪│╪¿┘è ╪º┘ä╪¬┘â╪º┘à┘ä┘è ╪º┘ä╪¬┘ü╪º╪╢┘ä┘è ╪º┘ä┘â╪│╪▒┘è. ┘è╪╣╪╖┘è ╪º╪│╪¬╪¼╪º╪¿╪⌐ ╪¬╪¡┘â┘à ┘à╪▒┘å╪⌐ ╪¼╪»╪º┘ï ┘ä┘ä╪¬┘è╪º╪▒ ┘ê╪º┘ä╪╖╪º┘é╪⌐.'},
+    'block_vfd': {'title': 'Variable Frequency Drive', 'text': '╪º┘ä╪╣╪º┘â╪│ ╪º┘ä╪░┘è ┘è┘à╪» ╪º┘ä┘à╪╢╪«╪⌐ ╪¿╪º┘ä╪¼┘ç╪» ┘ê╪º┘ä╪¬╪▒╪»╪» ╪º┘ä┘à┘å╪º╪│╪¿┘è┘å ┘ä╪¬╪╣┘à┘ä ╪¿╪º┘ä┘â┘ü╪º╪í╪⌐ ╪º┘ä┘à╪╖┘ä┘ê╪¿╪⌐.'},
+    'block_pump': {'title': 'Motor & Pump Drive', 'text': '╪º┘ä┘à╪¡╪▒┘â ╪º┘ä╪░┘è ┘è┘ê┘ä╪» ╪╖╪º┘é╪⌐ ╪¡╪▒┘â┘è╪⌐ ┘ä╪╢╪« ╪º┘ä┘à┘è╪º┘ç ╪¿┘å╪º╪í┘ï ╪╣┘ä┘ë ╪╖╪º┘é╪⌐ ╪º┘ä╪╣╪º┘â╪│.'},
+    'block_tank': {'title': 'Water Tank', 'text': '╪º┘ä╪«╪▓╪º┘å. ┘è╪╣╪¬┘à╪» ╪╣┘ä┘ë ┘à┘ê╪º╪▓┘å╪⌐ ╪º┘ä┘â╪¬┘ä╪⌐ ┘ä╪¡╪│╪º╪¿ ┘à╪│╪¬┘ê┘ë ╪º┘ä┘à┘è╪º┘ç.'},
+    'block_demand': {'title': 'Water Demand Profile', 'text': '╪¡╪¼┘à ╪º┘ä┘à┘è╪º┘ç ╪º┘ä┘à╪│╪¬┘ç┘ä┘â╪⌐ ╪º┘ä┘à╪¬╪║┘è╪▒ ╪▓┘à┘å┘è╪º┘ï.'},
+    'block_ai': {'title': 'AI Neural Predictor', 'text': '╪º┘ä╪┤╪¿┘â╪⌐ ╪º┘ä╪╣╪╡╪¿┘è╪⌐ ┘ä┘ä╪¬┘å╪¿╪ñ ╪¿╪º┘ä╪Ñ╪┤╪╣╪º╪╣ ╪º┘ä┘à╪│╪¬┘é╪¿┘ä┘è.'},
+    'block_mpc_mgr': {'title': 'MPC Manager', 'text': '╪º┘ä┘à╪»┘è╪▒ ╪º┘ä┘à╪▒╪¼╪╣┘è. ┘è╪¡╪│╪¿ ╪º┘ä┘à╪│╪º╪▒ ╪º┘ä┘à╪½╪º┘ä┘è ┘ä┘ä╪¬╪¡┘â┘à.'},
+    'block_mpc_ctrl': {'title': 'MPC Controller', 'text': '┘à╪¬╪¡┘â┘à ╪º┘ä╪╖╪¿┘é╪⌐ ╪º┘ä╪│┘ü┘ä┘è╪⌐. ┘è┘ê┘ä╪» ╪ú┘ê╪º┘à╪▒ ╪º┘ä╪¬╪¡┘â┘à ╪¿╪»┘é╪⌐ ╪▒┘è╪º╪╢┘è╪⌐ ╪╣╪º┘ä┘è╪⌐.'},
     
     # Root Small Blocks
-    'block_gain_root': {'title': 'Flow Conversion Gain', 'text': 'يحول التدفق الخام إلى تدفق معياري داخل الخزان.', 'text_en': 'Converts raw flow into standardized flow inside the tank.'},
-    'block_day_root': {'title': 'Day Selector', 'text': 'يحدد الأيام التاريخية لتسليمها للذكاء الاصطناعي.', 'text_en': 'Selects historical days to feed into the AI.'},
-    'block_time_root': {'title': 'Simulation Clock', 'text': 'مؤقت المحاكاة. يضمن التزامن الدقيق للعمليات.', 'text_en': 'Simulation clock. Ensures precise synchronization.'},
-    'block_delay_root': {'title': 'Discrete Delay (z^-1)', 'text': 'تأخير زمني يحاكي تأخر وصول قراءات الحساسات الحقيقية.', 'text_en': 'Time delay simulating real sensor latency.'},
-    'block_ghi_in': {'title': 'Solar Irradiance (GHI)', 'text': 'الإشعاع الشمسي الخام.', 'text_en': 'Raw solar irradiance input.'},
-    'block_temp_in': {'title': 'Ambient Temperature', 'text': 'درجة الحرارة البيئية.', 'text_en': 'Ambient environmental temperature.'},
-    'block_mux_1': {'title': 'Input Multiplexer 1', 'text': 'يجمع المدخلات قبل توجيهها للوح الشمسي.', 'text_en': 'Combines inputs before routing to the solar panel.'},
-    'block_mux_2': {'title': 'Input Multiplexer 2', 'text': 'يجمع المدخلات قبل توجيهها للوح الشمسي.', 'text_en': 'Combines inputs before routing to the solar panel.'},
+    'block_gain_root': {'title': 'Flow Conversion Gain', 'text': '┘è╪¡┘ê┘ä ╪º┘ä╪¬╪»┘ü┘é ╪º┘ä╪«╪º┘à ╪Ñ┘ä┘ë ╪¬╪»┘ü┘é ┘à╪╣┘è╪º╪▒┘è ╪»╪º╪«┘ä ╪º┘ä╪«╪▓╪º┘å.'},
+    'block_day_root': {'title': 'Day Selector', 'text': '┘è╪¡╪»╪» ╪º┘ä╪ú┘è╪º┘à ╪º┘ä╪¬╪º╪▒┘è╪«┘è╪⌐ ┘ä╪¬╪│┘ä┘è┘à┘ç╪º ┘ä┘ä╪░┘â╪º╪í ╪º┘ä╪º╪╡╪╖┘å╪º╪╣┘è.'},
+    'block_time_root': {'title': 'Simulation Clock', 'text': '┘à╪ñ┘é╪¬ ╪º┘ä┘à╪¡╪º┘â╪º╪⌐. ┘è╪╢┘à┘å ╪º┘ä╪¬╪▓╪º┘à┘å ╪º┘ä╪»┘é┘è┘é ┘ä┘ä╪╣┘à┘ä┘è╪º╪¬.'},
+    'block_delay_root': {'title': 'Discrete Delay (z^-1)', 'text': '╪¬╪ú╪«┘è╪▒ ╪▓┘à┘å┘è ┘è╪¡╪º┘â┘è ╪¬╪ú╪«╪▒ ┘ê╪╡┘ê┘ä ┘é╪▒╪º╪í╪º╪¬ ╪º┘ä╪¡╪│╪º╪│╪º╪¬ ╪º┘ä╪¡┘é┘è┘é┘è╪⌐.'},
+    'block_ghi_in': {'title': 'Solar Irradiance (GHI)', 'text': '╪º┘ä╪Ñ╪┤╪╣╪º╪╣ ╪º┘ä╪┤┘à╪│┘è ╪º┘ä╪«╪º┘à.'},
+    'block_temp_in': {'title': 'Ambient Temperature', 'text': '╪»╪▒╪¼╪⌐ ╪º┘ä╪¡╪▒╪º╪▒╪⌐ ╪º┘ä╪¿┘è╪ª┘è╪⌐.'},
+    'block_mux_1': {'title': 'Input Multiplexer 1', 'text': '┘è╪¼┘à╪╣ ╪º┘ä┘à╪»╪«┘ä╪º╪¬ ┘é╪¿┘ä ╪¬┘ê╪¼┘è┘ç┘ç╪º ┘ä┘ä┘ê╪¡ ╪º┘ä╪┤┘à╪│┘è.'},
+    'block_mux_2': {'title': 'Input Multiplexer 2', 'text': '┘è╪¼┘à╪╣ ╪º┘ä┘à╪»╪«┘ä╪º╪¬ ┘é╪¿┘ä ╪¬┘ê╪¼┘è┘ç┘ç╪º ┘ä┘ä┘ê╪¡ ╪º┘ä╪┤┘à╪│┘è.'},
     
     # ====== AI BLOCK DIAGRAM ======
-    'ai_day': {'title': 'Day Selection Input', 'text': 'إشارة اليوم المراد التنبؤ به.', 'text_en': 'Target day signal for prediction.'},
-    'ai_mux1': {'title': 'Future Data Multiplexer', 'text': 'يجمع أيام المستقبل كمتجه واحد.', 'text_en': 'Combines future days into a single vector.'},
-    'ai_mux2': {'title': 'Historical Data Multiplexer', 'text': 'يجمع بيانات التاريخ والسياق الزمني.', 'text_en': 'Combines historical data and temporal context.'},
-    'ai_demux': {'title': '1:4 Demultiplexer', 'text': 'يفصل المتجهات للتعامل معها بشكل فردي.', 'text_en': 'Separates vectors for individual processing.'},
-    'ai_mux_41': {'title': '4:1 Multiplexer', 'text': 'يعيد دمج البيانات المنقاة.', 'text_en': 'Re-merges filtered data.'},
-    'ai_transpose': {'title': 'Matrix Transpose', 'text': 'تعديل شكل المصفوفة لتلائم مدخلات الشبكة العصبية.', 'text_en': 'Reshapes matrix to fit neural network inputs.'},
-    'ai_clock': {'title': 'Local Clock', 'text': 'مؤقت متزامن خاص ببلوك الذكاء الاصطناعي.', 'text_en': 'Synchronized clock for the AI block.'},
-    'ai_nn': {'title': 'PI-HybridNet', 'text': 'دالة ماتلاب المدمج بها أوزان الشبكة العصبية لحساب التنبؤ النهائي.', 'text_en': 'MATLAB function with NN weights for final prediction.'},
-    'ai_out_ghi': {'title': 'Predicted GHI', 'text': 'ناتج التنبؤ بالإشعاع الشمسي.', 'text_en': 'Solar irradiance prediction output.'},
-    'ai_out_v': {'title': 'Future Vector', 'text': 'متجه البيانات المستقبلية المعالج.', 'text_en': 'Processed future data vector.'},
+    'ai_day': {'title': 'Day Selection Input', 'text': '╪Ñ╪┤╪º╪▒╪⌐ ╪º┘ä┘è┘ê┘à ╪º┘ä┘à╪▒╪º╪» ╪º┘ä╪¬┘å╪¿╪ñ ╪¿┘ç.'},
+    'ai_mux1': {'title': 'Future Data Multiplexer', 'text': '┘è╪¼┘à╪╣ ╪ú┘è╪º┘à ╪º┘ä┘à╪│╪¬┘é╪¿┘ä ┘â┘à╪¬╪¼┘ç ┘ê╪º╪¡╪».'},
+    'ai_mux2': {'title': 'Historical Data Multiplexer', 'text': '┘è╪¼┘à╪╣ ╪¿┘è╪º┘å╪º╪¬ ╪º┘ä╪¬╪º╪▒┘è╪« ┘ê╪º┘ä╪│┘è╪º┘é ╪º┘ä╪▓┘à┘å┘è.'},
+    'ai_demux': {'title': '1:4 Demultiplexer', 'text': '┘è┘ü╪╡┘ä ╪º┘ä┘à╪¬╪¼┘ç╪º╪¬ ┘ä┘ä╪¬╪╣╪º┘à┘ä ┘à╪╣┘ç╪º ╪¿╪┤┘â┘ä ┘ü╪▒╪»┘è.'},
+    'ai_mux_41': {'title': '4:1 Multiplexer', 'text': '┘è╪╣┘è╪» ╪»┘à╪¼ ╪º┘ä╪¿┘è╪º┘å╪º╪¬ ╪º┘ä┘à┘å┘é╪º╪⌐.'},
+    'ai_transpose': {'title': 'Matrix Transpose', 'text': '╪¬╪╣╪»┘è┘ä ╪┤┘â┘ä ╪º┘ä┘à╪╡┘ü┘ê┘ü╪⌐ ┘ä╪¬┘ä╪º╪ª┘à ┘à╪»╪«┘ä╪º╪¬ ╪º┘ä╪┤╪¿┘â╪⌐ ╪º┘ä╪╣╪╡╪¿┘è╪⌐.'},
+    'ai_clock': {'title': 'Local Clock', 'text': '┘à╪ñ┘é╪¬ ┘à╪¬╪▓╪º┘à┘å ╪«╪º╪╡ ╪¿╪¿┘ä┘ê┘â ╪º┘ä╪░┘â╪º╪í ╪º┘ä╪º╪╡╪╖┘å╪º╪╣┘è.'},
+    'ai_nn': {'title': 'PI-HybridNet', 'text': '╪»╪º┘ä╪⌐ ┘à╪º╪¬┘ä╪º╪¿ ╪º┘ä┘à╪»┘à╪¼ ╪¿┘ç╪º ╪ú┘ê╪▓╪º┘å ╪º┘ä╪┤╪¿┘â╪⌐ ╪º┘ä╪╣╪╡╪¿┘è╪⌐ ┘ä╪¡╪│╪º╪¿ ╪º┘ä╪¬┘å╪¿╪ñ ╪º┘ä┘å┘ç╪º╪ª┘è.'},
+    'ai_out_ghi': {'title': 'Predicted GHI', 'text': '┘å╪º╪¬╪¼ ╪º┘ä╪¬┘å╪¿╪ñ ╪¿╪º┘ä╪Ñ╪┤╪╣╪º╪╣ ╪º┘ä╪┤┘à╪│┘è.'},
+    'ai_out_v': {'title': 'Future Vector', 'text': '┘à╪¬╪¼┘ç ╪º┘ä╪¿┘è╪º┘å╪º╪¬ ╪º┘ä┘à╪│╪¬┘é╪¿┘ä┘è╪⌐ ╪º┘ä┘à╪╣╪º┘ä╪¼.'},
     
     # ====== WATER TANK DIAGRAM ======
-    'wt_qin': {'title': 'Inlet Flow (Qin)', 'text': 'المياه المتدفقة من المضخة إلى الخزان.', 'text_en': 'Water flowing from pump into tank.'},
-    'wt_qout': {'title': 'Outlet Flow (Qout)', 'text': 'المياه المسحوبة من الخزان.', 'text_en': 'Water drawn from the tank.'},
-    'wt_sum': {'title': 'Flow Summation', 'text': 'يحسب الفرق (Delta Q) بين المياه الداخلة والخارجة.', 'text_en': 'Calculates Delta Q between inlet and outlet water.'},
-    'wt_gain': {'title': 'Area Inverse (1/A)', 'text': 'يقسم تدفق المياه على مساحة الخزان لتحويله إلى ارتفاع.', 'text_en': 'Divides water flow by tank area to convert to height.'},
-    'wt_int': {'title': 'Integrator (1/s)', 'text': 'يجمع التغيرات في الارتفاع عبر الزمن للحصول على المستوى الكلي.', 'text_en': 'Integrates height changes over time for total level.'},
-    'wt_sat': {'title': 'Saturation', 'text': 'يضمن عدم تجاوز المستوى لسعة الخزان أو هبوطه تحت الصفر.', 'text_en': 'Ensures level stays within tank capacity.'},
-    'wt_ht': {'title': 'Tank Level (H)', 'text': 'مستوى المياه الفعلي.', 'text_en': 'Actual water level.'}
+    'wt_qin': {'title': 'Inlet Flow (Qin)', 'text': '╪º┘ä┘à┘è╪º┘ç ╪º┘ä┘à╪¬╪»┘ü┘é╪⌐ ┘à┘å ╪º┘ä┘à╪╢╪«╪⌐ ╪Ñ┘ä┘ë ╪º┘ä╪«╪▓╪º┘å.'},
+    'wt_qout': {'title': 'Outlet Flow (Qout)', 'text': '╪º┘ä┘à┘è╪º┘ç ╪º┘ä┘à╪│╪¡┘ê╪¿╪⌐ ┘à┘å ╪º┘ä╪«╪▓╪º┘å.'},
+    'wt_sum': {'title': 'Flow Summation', 'text': '┘è╪¡╪│╪¿ ╪º┘ä┘ü╪▒┘é (Delta Q) ╪¿┘è┘å ╪º┘ä┘à┘è╪º┘ç ╪º┘ä╪»╪º╪«┘ä╪⌐ ┘ê╪º┘ä╪«╪º╪▒╪¼╪⌐.'},
+    'wt_gain': {'title': 'Area Inverse (1/A)', 'text': '┘è┘é╪│┘à ╪¬╪»┘ü┘é ╪º┘ä┘à┘è╪º┘ç ╪╣┘ä┘ë ┘à╪│╪º╪¡╪⌐ ╪º┘ä╪«╪▓╪º┘å ┘ä╪¬╪¡┘ê┘è┘ä┘ç ╪Ñ┘ä┘ë ╪º╪▒╪¬┘ü╪º╪╣.'},
+    'wt_int': {'title': 'Integrator (1/s)', 'text': '┘è╪¼┘à╪╣ ╪º┘ä╪¬╪║┘è╪▒╪º╪¬ ┘ü┘è ╪º┘ä╪º╪▒╪¬┘ü╪º╪╣ ╪╣╪¿╪▒ ╪º┘ä╪▓┘à┘å ┘ä┘ä╪¡╪╡┘ê┘ä ╪╣┘ä┘ë ╪º┘ä┘à╪│╪¬┘ê┘ë ╪º┘ä┘â┘ä┘è.'},
+    'wt_sat': {'title': 'Saturation', 'text': '┘è╪╢┘à┘å ╪╣╪»┘à ╪¬╪¼╪º┘ê╪▓ ╪º┘ä┘à╪│╪¬┘ê┘ë ┘ä╪│╪╣╪⌐ ╪º┘ä╪«╪▓╪º┘å ╪ú┘ê ┘ç╪¿┘ê╪╖┘ç ╪¬╪¡╪¬ ╪º┘ä╪╡┘ü╪▒.'},
+    'wt_ht': {'title': 'Tank Level (H)', 'text': '┘à╪│╪¬┘ê┘ë ╪º┘ä┘à┘è╪º┘ç ╪º┘ä┘ü╪╣┘ä┘è.'}
 }
 
 # Add dynamic inputs for root and AI
-for i in range(3): explanations[f'block_ghi_{i}'] = {'title': f'GHI Day {i+1}', 'text': 'إشارة إشعاع شمسية منفصلة.', 'text_en': 'Separate solar irradiance signal.'}
-for i in range(3): explanations[f'block_tmp_{i}'] = {'title': f'Temp Day {i+1}', 'text': 'إشارة درجة حرارة منفصلة.', 'text_en': 'Separate temperature signal.'}
-for i in range(3): explanations[f'ai_ghi_fut_{i}'] = {'title': f'Future GHI {i+1}', 'text': 'بيانات مستقبلية نظرية.', 'text_en': 'Theoretical future data.'}
-for i in range(3): explanations[f'ai_hist_{i}'] = {'title': f'Historical Data {i+1}', 'text': 'بيانات تاريخية كمرجع للشبكة.', 'text_en': 'Historical data as network reference.'}
+for i in range(3): explanations[f'block_ghi_{i}'] = {'title': f'GHI Day {i+1}', 'text': '╪Ñ╪┤╪º╪▒╪⌐ ╪Ñ╪┤╪╣╪º╪╣ ╪┤┘à╪│┘è╪⌐ ┘à┘å┘ü╪╡┘ä╪⌐.'}
+for i in range(3): explanations[f'block_tmp_{i}'] = {'title': f'Temp Day {i+1}', 'text': '╪Ñ╪┤╪º╪▒╪⌐ ╪»╪▒╪¼╪⌐ ╪¡╪▒╪º╪▒╪⌐ ┘à┘å┘ü╪╡┘ä╪⌐.'}
+for i in range(3): explanations[f'ai_ghi_fut_{i}'] = {'title': f'Future GHI {i+1}', 'text': '╪¿┘è╪º┘å╪º╪¬ ┘à╪│╪¬┘é╪¿┘ä┘è╪⌐ ┘å╪╕╪▒┘è╪⌐.'}
+for i in range(3): explanations[f'ai_hist_{i}'] = {'title': f'Historical Data {i+1}', 'text': '╪¿┘è╪º┘å╪º╪¬ ╪¬╪º╪▒┘è╪«┘è╪⌐ ┘â┘à╪▒╪¼╪╣ ┘ä┘ä╪┤╪¿┘â╪⌐.'}
 
 html_template = """<!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <title>شرح مخططات التحكم والمحاكاة التفاعلية</title>
+    <title>╪┤╪▒╪¡ ┘à╪«╪╖╪╖╪º╪¬ ╪º┘ä╪¬╪¡┘â┘à ┘ê╪º┘ä┘à╪¡╪º┘â╪º╪⌐ ╪º┘ä╪¬┘ü╪º╪╣┘ä┘è╪⌐</title>
     <style>
         body {{ font-family: 'Segoe UI', Tahoma, Arial, sans-serif; background: #F8FAFC; margin: 0; display: flex; height: 100vh; overflow: hidden; }}
         #sidebar {{ width: 340px; min-width: 250px; max-width: 600px; background: #FFFFFF; box-shadow: -2px 0 10px rgba(0,0,0,0.1); padding: 30px; display: flex; flex-direction: column; z-index: 10; overflow-y: auto; resize: horizontal; direction: rtl; }}
@@ -125,25 +125,24 @@ html_template = """<!DOCTYPE html>
     <div id="main-content">
         <div class="header-bar">
             <div class="tabs">
-                <div class="tab active" onclick="switchTab(0)">المخطط الرئيسي (Root)</div>
-                <div class="tab" onclick="switchTab(1)">الذكاء الاصطناعي (AI Block)</div>
-                <div class="tab" onclick="switchTab(2)">خزان المياه (Water Tank)</div>
+                <div class="tab active" onclick="switchTab(0)">╪º┘ä┘à╪«╪╖╪╖ ╪º┘ä╪▒╪ª┘è╪│┘è (Root)</div>
+                <div class="tab" onclick="switchTab(1)">╪º┘ä╪░┘â╪º╪í ╪º┘ä╪º╪╡╪╖┘å╪º╪╣┘è (AI Block)</div>
+                <div class="tab" onclick="switchTab(2)">╪«╪▓╪º┘å ╪º┘ä┘à┘è╪º┘ç (Water Tank)</div>
             </div>
             <div style="position: relative; margin-left: 15px; display: flex; align-items: center;">
-                <button class="btn-ctrl" id="langToggle" onclick="toggleLanguage()">🌐 English</button>
-                <button class="btn-ctrl" onclick="document.getElementById('ctrl-panel').classList.toggle('active')">⚙️ مركز التحكم</button>
+                <button class="btn-ctrl" onclick="document.getElementById('ctrl-panel').classList.toggle('active')">ΓÜÖ∩╕Å ┘à╪▒┘â╪▓ ╪º┘ä╪¬╪¡┘â┘à</button>
                 <div id="ctrl-panel" class="ctrl-panel">
-                    <label><input type="checkbox" id="autoCam" checked> 🎥 كاميرا التتبع التلقائي</label>
-                    <label><input type="checkbox" id="toggleSidebar" checked onchange="document.getElementById('sidebar').style.display = this.checked ? 'flex' : 'none'"> 🗂️ عرض شريط الشرح</label>
+                    <label><input type="checkbox" id="autoCam" checked> ≡ƒÄÑ ┘â╪º┘à┘è╪▒╪º ╪º┘ä╪¬╪¬╪¿╪╣ ╪º┘ä╪¬┘ä┘é╪º╪ª┘è</label>
+                    <label><input type="checkbox" id="toggleSidebar" checked onchange="document.getElementById('sidebar').style.display = this.checked ? 'flex' : 'none'"> ≡ƒùé∩╕Å ╪╣╪▒╪╢ ╪┤╪▒┘è╪╖ ╪º┘ä╪┤╪▒╪¡</label>
                     <hr style="margin: 10px 0; border: 0; border-top: 1px solid #E2E8F0; width: 100%;">
-                    <div style="margin-bottom: 5px; font-weight: bold; color: #475569; font-size: 13px;">⏱️ سرعة المحاكاة</div>
+                    <div style="margin-bottom: 5px; font-weight: bold; color: #475569; font-size: 13px;">ΓÅ▒∩╕Å ╪│╪▒╪╣╪⌐ ╪º┘ä┘à╪¡╪º┘â╪º╪⌐</div>
                     <input type="range" id="simSpeed" min="0.5" max="2" step="0.5" value="1" style="width: 100%; direction: ltr;">
                     <hr style="margin: 10px 0; border: 0; border-top: 1px solid #E2E8F0; width: 100%;">
-                    <button class="btn-export" onclick="export4KPNG()">📥 تصدير 8K PNG</button>
-                    <button class="btn-export" style="margin-top: 8px; background: #475569;" onclick="exportSVG()">📥 تصدير SVG الأصلي</button>
+                    <button class="btn-export" onclick="export4KPNG()">≡ƒôÑ ╪¬╪╡╪»┘è╪▒ 4K PNG</button>
+                    <button class="btn-export" style="margin-top: 8px; background: #475569;" onclick="exportSVG()">≡ƒôÑ ╪¬╪╡╪»┘è╪▒ SVG ╪º┘ä╪ú╪╡┘ä┘è</button>
                 </div>
             </div>
-            <button id="simBtn" class="btn-sim" onclick="toggleSimulation()">▶ تشغيل المحاكاة</button>
+            <button id="simBtn" class="btn-sim" onclick="toggleSimulation()">Γû╢ ╪¬╪┤╪║┘è┘ä ╪º┘ä┘à╪¡╪º┘â╪º╪⌐</button>
         </div>
         
         <div class="svg-container active" id="tab0"><div class="zoom-wrapper" id="zoom0">{SVG_ROOT}</div></div>
@@ -152,9 +151,9 @@ html_template = """<!DOCTYPE html>
     </div>
     
     <div id="sidebar">
-        <h1>التفاصيل والشرح</h1>
+        <h1>╪º┘ä╪¬┘ü╪º╪╡┘è┘ä ┘ê╪º┘ä╪┤╪▒╪¡</h1>
         <div id="info-content">
-            <div class="placeholder">انقر على أي عنصر أو بلوك مهما كان صغيراً لعرض شرحه التفصيلي.<br><br>اضغط على "تشغيل المحاكاة" لتتبع مسار الإشارات والطاقة عبر الأسلاك والبلوكات.<br><br>💡 يمكنك استخدام عجلة الفأرة (Scroll) للتكبير والسحب للتحريك.</div>
+            <div class="placeholder">╪º┘å┘é╪▒ ╪╣┘ä┘ë ╪ú┘è ╪╣┘å╪╡╪▒ ╪ú┘ê ╪¿┘ä┘ê┘â ┘à┘ç┘à╪º ┘â╪º┘å ╪╡╪║┘è╪▒╪º┘ï ┘ä╪╣╪▒╪╢ ╪┤╪▒╪¡┘ç ╪º┘ä╪¬┘ü╪╡┘è┘ä┘è.<br><br>╪º╪╢╪║╪╖ ╪╣┘ä┘ë "╪¬╪┤╪║┘è┘ä ╪º┘ä┘à╪¡╪º┘â╪º╪⌐" ┘ä╪¬╪¬╪¿╪╣ ┘à╪│╪º╪▒ ╪º┘ä╪Ñ╪┤╪º╪▒╪º╪¬ ┘ê╪º┘ä╪╖╪º┘é╪⌐ ╪╣╪¿╪▒ ╪º┘ä╪ú╪│┘ä╪º┘â ┘ê╪º┘ä╪¿┘ä┘ê┘â╪º╪¬.<br><br>≡ƒÆí ┘è┘à┘â┘å┘â ╪º╪│╪¬╪«╪»╪º┘à ╪╣╪¼┘ä╪⌐ ╪º┘ä┘ü╪ú╪▒╪⌐ (Scroll) ┘ä┘ä╪¬┘â╪¿┘è╪▒ ┘ê╪º┘ä╪│╪¡╪¿ ┘ä┘ä╪¬╪¡╪▒┘è┘â.</div>
         </div>
     </div>
 
@@ -163,21 +162,6 @@ html_template = """<!DOCTYPE html>
         let currentActive = null;
         let isSimulating = false;
         let simIntervals = [];
-        let lang = 'ar';
-
-        function toggleLanguage() {{
-            lang = lang === 'ar' ? 'en' : 'ar';
-            document.getElementById('langToggle').innerText = lang === 'ar' ? '🌐 English' : '🌐 عربي';
-            document.documentElement.dir = lang === 'ar' ? 'rtl' : 'ltr';
-            document.documentElement.lang = lang;
-            if (currentActive) {{
-                const g = currentActive.closest('g') || currentActive.parentNode;
-                if (g && g.id && explanations[g.id]) {{
-                    const d = explanations[g.id];
-                    document.getElementById('info-content').innerHTML = `<div id="info-title">${{d.title}}</div><div id="info-text">${{lang==='en' && d.text_en ? d.text_en : d.text}}</div>`;
-                }}
-            }}
-        }}
 
         function switchTab(index) {{
             document.querySelectorAll('.tab').forEach((t, i) => t.classList.toggle('active', i === index));
@@ -224,7 +208,7 @@ html_template = """<!DOCTYPE html>
                 const data = explanations[id];
                 document.getElementById('info-content').innerHTML = `
                     <div id="info-title">${{data.title}}</div>
-                    <div id="info-text">${{lang==='en' && data.text_en ? data.text_en : data.text}}</div>
+                    <div id="info-text">${{data.text}}</div>
                 `;
             }});
         }}
@@ -233,13 +217,13 @@ html_template = """<!DOCTYPE html>
             const btn = document.getElementById('simBtn');
             if (isSimulating) {{
                 stopSimulation();
-                btn.innerHTML = '▶ تشغيل المحاكاة';
+                btn.innerHTML = 'Γû╢ ╪¬╪┤╪║┘è┘ä ╪º┘ä┘à╪¡╪º┘â╪º╪⌐';
                 btn.classList.remove('running');
                 isSimulating = false;
             }} else {{
                 switchTab(0); // Run root simulation
                 startRootSimulation();
-                btn.innerHTML = '■ إيقاف المحاكاة';
+                btn.innerHTML = 'Γûá ╪Ñ┘è┘é╪º┘ü ╪º┘ä┘à╪¡╪º┘â╪º╪⌐';
                 btn.classList.add('running');
                 isSimulating = true;
             }}
@@ -251,7 +235,7 @@ html_template = """<!DOCTYPE html>
             document.querySelectorAll('.flowing-path, .flowing-block').forEach(el => {{
                 el.classList.remove('flowing-path', 'flowing-block');
             }});
-            document.getElementById('info-content').innerHTML = '<div class="placeholder">تم إيقاف المحاكاة. انقر على البلوكات للتصفح الحُر.</div>';
+            document.getElementById('info-content').innerHTML = '<div class="placeholder">╪¬┘à ╪Ñ┘è┘é╪º┘ü ╪º┘ä┘à╪¡╪º┘â╪º╪⌐. ╪º┘å┘é╪▒ ╪╣┘ä┘ë ╪º┘ä╪¿┘ä┘ê┘â╪º╪¬ ┘ä┘ä╪¬╪╡┘ü╪¡ ╪º┘ä╪¡┘Å╪▒.</div>';
         }}
 
         function addFlow(selector, type='path') {{
@@ -266,7 +250,7 @@ html_template = """<!DOCTYPE html>
 
         function updateSimText(title, text) {{
             document.getElementById('info-content').innerHTML = `
-                <div id="info-title" style="color: #F59E0B;">🔄 ${{title}}</div>
+                <div id="info-title" style="color: #F59E0B;">≡ƒöä ${{title}}</div>
                 <div id="info-text">${{text}}</div>
             `;
         }}
@@ -298,7 +282,7 @@ html_template = """<!DOCTYPE html>
                 flyTo(250, 50, 1.3, 0);
                 addFlow('[id^="path_in_"], [id^="path_ghi"], [id^="path_temp"], [id^="path_day_"]');
                 addFlow('#block_mux_1, #block_mux_2, #block_day_root', 'block');
-                updateSimText('المرحلة 1: تجميع الإشارات', 'يتم التقاط قراءات الإشعاع الشمسي والحرارة وتمريرها عبر الـ Multiplexers نحو الطبقة الفيزيائية. كما يتم اختيار اليوم المطلوب وارساله للذكاء الاصطناعي.');
+                updateSimText('╪º┘ä┘à╪▒╪¡┘ä╪⌐ 1: ╪¬╪¼┘à┘è╪╣ ╪º┘ä╪Ñ╪┤╪º╪▒╪º╪¬', '┘è╪¬┘à ╪º┘ä╪¬┘é╪º╪╖ ┘é╪▒╪º╪í╪º╪¬ ╪º┘ä╪Ñ╪┤╪╣╪º╪╣ ╪º┘ä╪┤┘à╪│┘è ┘ê╪º┘ä╪¡╪▒╪º╪▒╪⌐ ┘ê╪¬┘à╪▒┘è╪▒┘ç╪º ╪╣╪¿╪▒ ╪º┘ä┘Ç Multiplexers ┘å╪¡┘ê ╪º┘ä╪╖╪¿┘é╪⌐ ╪º┘ä┘ü┘è╪▓┘è╪º╪ª┘è╪⌐. ┘â┘à╪º ┘è╪¬┘à ╪º╪«╪¬┘è╪º╪▒ ╪º┘ä┘è┘ê┘à ╪º┘ä┘à╪╖┘ä┘ê╪¿ ┘ê╪º╪▒╪│╪º┘ä┘ç ┘ä┘ä╪░┘â╪º╪í ╪º┘ä╪º╪╡╪╖┘å╪º╪╣┘è.');
             }}, 500 * dt));
 
             // Phase 2
@@ -306,7 +290,7 @@ html_template = """<!DOCTYPE html>
                 flyTo(150, -150, 1.4, 0);
                 addFlow('#block_ai', 'block');
                 addFlow('[id^="path_ai_"]');
-                updateSimText('المرحلة 2: التنبؤ (الذكاء الاصطناعي)', 'يستقبل الذكاء الاصطناعي بيانات اليوم ويبدأ بحساب الإشعاع المتوقع GHI_pred وتمريره لمدير التحكم.');
+                updateSimText('╪º┘ä┘à╪▒╪¡┘ä╪⌐ 2: ╪º┘ä╪¬┘å╪¿╪ñ (╪º┘ä╪░┘â╪º╪í ╪º┘ä╪º╪╡╪╖┘å╪º╪╣┘è)', '┘è╪│╪¬┘é╪¿┘ä ╪º┘ä╪░┘â╪º╪í ╪º┘ä╪º╪╡╪╖┘å╪º╪╣┘è ╪¿┘è╪º┘å╪º╪¬ ╪º┘ä┘è┘ê┘à ┘ê┘è╪¿╪»╪ú ╪¿╪¡╪│╪º╪¿ ╪º┘ä╪Ñ╪┤╪╣╪º╪╣ ╪º┘ä┘à╪¬┘ê┘é╪╣ GHI_pred ┘ê╪¬┘à╪▒┘è╪▒┘ç ┘ä┘à╪»┘è╪▒ ╪º┘ä╪¬╪¡┘â┘à.');
             }}, 3500 * dt));
 
             // Phase 3
@@ -315,7 +299,7 @@ html_template = """<!DOCTYPE html>
                 addFlow('#block_mpc_mgr', 'block');
                 addFlow('[id^="path_mgr_"]');
                 addFlow('[id^="path_clock"], #block_time_root', 'block');
-                updateSimText('المرحلة 3: التوجيه المرجعي', 'يحسب المدير المرجعي MPC Manager التدفق المستهدف (Q_ref) ويرسله كإشارة تغذية أمامية (Feedforward) للعاكس مباشرة، وكهدف للمتحكم السفلي.');
+                updateSimText('╪º┘ä┘à╪▒╪¡┘ä╪⌐ 3: ╪º┘ä╪¬┘ê╪¼┘è┘ç ╪º┘ä┘à╪▒╪¼╪╣┘è', '┘è╪¡╪│╪¿ ╪º┘ä┘à╪»┘è╪▒ ╪º┘ä┘à╪▒╪¼╪╣┘è MPC Manager ╪º┘ä╪¬╪»┘ü┘é ╪º┘ä┘à╪│╪¬┘ç╪»┘ü (Q_ref) ┘ê┘è╪▒╪│┘ä┘ç ┘â╪Ñ╪┤╪º╪▒╪⌐ ╪¬╪║╪░┘è╪⌐ ╪ú┘à╪º┘à┘è╪⌐ (Feedforward) ┘ä┘ä╪╣╪º┘â╪│ ┘à╪¿╪º╪┤╪▒╪⌐╪î ┘ê┘â┘ç╪»┘ü ┘ä┘ä┘à╪¬╪¡┘â┘à ╪º┘ä╪│┘ü┘ä┘è.');
             }}, 6500 * dt));
 
             // Phase 4
@@ -323,7 +307,7 @@ html_template = """<!DOCTYPE html>
                 flyTo(-300, -150, 1.4, 0);
                 addFlow('#block_mpc_ctrl', 'block');
                 addFlow('[id^="path_mpc_cmd"]');
-                updateSimText('المرحلة 4: الحسابات الرياضية (التحكم)', 'يقوم متحكم MPC Controller بحل معادلات Optimization معقدة لضمان استقرار الخزان والمضخة معاً، ثم يصدر إشارة التحكم (Command) لمتحكم الفولتية.');
+                updateSimText('╪º┘ä┘à╪▒╪¡┘ä╪⌐ 4: ╪º┘ä╪¡╪│╪º╪¿╪º╪¬ ╪º┘ä╪▒┘è╪º╪╢┘è╪⌐ (╪º┘ä╪¬╪¡┘â┘à)', '┘è┘é┘ê┘à ┘à╪¬╪¡┘â┘à MPC Controller ╪¿╪¡┘ä ┘à╪╣╪º╪»┘ä╪º╪¬ Optimization ┘à╪╣┘é╪»╪⌐ ┘ä╪╢┘à╪º┘å ╪º╪│╪¬┘é╪▒╪º╪▒ ╪º┘ä╪«╪▓╪º┘å ┘ê╪º┘ä┘à╪╢╪«╪⌐ ┘à╪╣╪º┘ï╪î ╪½┘à ┘è╪╡╪»╪▒ ╪Ñ╪┤╪º╪▒╪⌐ ╪º┘ä╪¬╪¡┘â┘à (Command) ┘ä┘à╪¬╪¡┘â┘à ╪º┘ä┘ü┘ê┘ä╪¬┘è╪⌐.');
             }}, 9500 * dt));
 
             // Phase 5
@@ -331,7 +315,7 @@ html_template = """<!DOCTYPE html>
                 flyTo(-150, 150, 1.3, 0);
                 addFlow('#block_pv, #block_fopid, #block_vfd, #block_pump', 'block');
                 addFlow('[id^="path_pv"], [id^="path_fopid"], [id^="path_vfd"], [id^="path_pump"]');
-                updateSimText('المرحلة 5: تشغيل المضخة وتدفق الطاقة', 'يتم استخراج الطاقة من اللوح الشمسي P_pv، ثم تتولى الـ FOPID تنقية الطاقة الذاهبة للـ VFD لتشغيل المضخة وإنتاج التدفق Q_raw.');
+                updateSimText('╪º┘ä┘à╪▒╪¡┘ä╪⌐ 5: ╪¬╪┤╪║┘è┘ä ╪º┘ä┘à╪╢╪«╪⌐ ┘ê╪¬╪»┘ü┘é ╪º┘ä╪╖╪º┘é╪⌐', '┘è╪¬┘à ╪º╪│╪¬╪«╪▒╪º╪¼ ╪º┘ä╪╖╪º┘é╪⌐ ┘à┘å ╪º┘ä┘ä┘ê╪¡ ╪º┘ä╪┤┘à╪│┘è P_pv╪î ╪½┘à ╪¬╪¬┘ê┘ä┘ë ╪º┘ä┘Ç FOPID ╪¬┘å┘é┘è╪⌐ ╪º┘ä╪╖╪º┘é╪⌐ ╪º┘ä╪░╪º┘ç╪¿╪⌐ ┘ä┘ä┘Ç VFD ┘ä╪¬╪┤╪║┘è┘ä ╪º┘ä┘à╪╢╪«╪⌐ ┘ê╪Ñ┘å╪¬╪º╪¼ ╪º┘ä╪¬╪»┘ü┘é Q_raw.');
             }}, 12500 * dt));
 
             // Phase 6
@@ -341,14 +325,14 @@ html_template = """<!DOCTYPE html>
                 addFlow('[id^="path_gain"], [id^="path_tank_out"], [id^="path_demand"]');
                 addFlow('[id^="path_fb_"]');
                 addFlow('#block_delay_root', 'block');
-                updateSimText('المرحلة 6: موازنة الخزان والتغذية الراجعة', 'يصل التدفق للخزان، وتُحسب الزيادة في المنسوب H(t). ثم تعود الإشارة كـ Feedback في المسار السفلي الطويل وتمر عبر الـ Delay استعداداً للثانية القادمة.');
+                updateSimText('╪º┘ä┘à╪▒╪¡┘ä╪⌐ 6: ┘à┘ê╪º╪▓┘å╪⌐ ╪º┘ä╪«╪▓╪º┘å ┘ê╪º┘ä╪¬╪║╪░┘è╪⌐ ╪º┘ä╪▒╪º╪¼╪╣╪⌐', '┘è╪╡┘ä ╪º┘ä╪¬╪»┘ü┘é ┘ä┘ä╪«╪▓╪º┘å╪î ┘ê╪¬┘Å╪¡╪│╪¿ ╪º┘ä╪▓┘è╪º╪»╪⌐ ┘ü┘è ╪º┘ä┘à┘å╪│┘ê╪¿ H(t). ╪½┘à ╪¬╪╣┘ê╪» ╪º┘ä╪Ñ╪┤╪º╪▒╪⌐ ┘â┘Ç Feedback ┘ü┘è ╪º┘ä┘à╪│╪º╪▒ ╪º┘ä╪│┘ü┘ä┘è ╪º┘ä╪╖┘ê┘è┘ä ┘ê╪¬┘à╪▒ ╪╣╪¿╪▒ ╪º┘ä┘Ç Delay ╪º╪│╪¬╪╣╪»╪º╪»╪º┘ï ┘ä┘ä╪½╪º┘å┘è╪⌐ ╪º┘ä┘é╪º╪»┘à╪⌐.');
             }}, 15500 * dt));
             
             // Phase 7 Reset View
             simIntervals.push(setTimeout(() => {{
                 flyTo(0, 0, 1, 0);
-                updateSimText('اكتملت المحاكاة', 'دورة التحكم اكتملت بنجاح. يمكنك إعادة التشغيل أو التصفح الحُر.');
-                document.getElementById('simBtn').innerHTML = '▶ إعادة المحاكاة';
+                updateSimText('╪º┘â╪¬┘à┘ä╪¬ ╪º┘ä┘à╪¡╪º┘â╪º╪⌐', '╪»┘ê╪▒╪⌐ ╪º┘ä╪¬╪¡┘â┘à ╪º┘â╪¬┘à┘ä╪¬ ╪¿┘å╪¼╪º╪¡. ┘è┘à┘â┘å┘â ╪Ñ╪╣╪º╪»╪⌐ ╪º┘ä╪¬╪┤╪║┘è┘ä ╪ú┘ê ╪º┘ä╪¬╪╡┘ü╪¡ ╪º┘ä╪¡┘Å╪▒.');
+                document.getElementById('simBtn').innerHTML = 'Γû╢ ╪Ñ╪╣╪º╪»╪⌐ ╪º┘ä┘à╪¡╪º┘â╪º╪⌐';
                 document.getElementById('simBtn').classList.remove('running');
                 isSimulating = false;
             }}, 21000 * dt));
@@ -443,8 +427,8 @@ html_template = """<!DOCTYPE html>
             
             // Parse Matplotlib viewBox for high native resolution
             const viewBox = svg.getAttribute('viewBox').split(' ');
-            let width = parseFloat(viewBox[2]) * 4;
-            let height = parseFloat(viewBox[3]) * 4;
+            let width = parseFloat(viewBox[2]);
+            let height = parseFloat(viewBox[3]);
             
             if (!width) {{ width = 3840; height = 2160; }} // 4K Fallback
             
@@ -492,7 +476,7 @@ def clean_svg(svg_str):
     return svg_str
 
 def read_svg(filename):
-    with open(rf'c:\Users\Mohammed26\Desktop\مخطط سيموليشن\{filename}', 'r', encoding='utf-8') as f:
+    with open(rf'c:\Users\Mohammed26\Desktop\┘à╪«╪╖╪╖ ╪│┘è┘à┘ê┘ä┘è╪┤┘å\{filename}', 'r', encoding='utf-8') as f:
         return clean_svg(f.read())
 
 svg_root = read_svg('01_Root_Level_Final.svg')
@@ -506,7 +490,7 @@ html_content = html_template.format(
     EXPLANATIONS_JSON=json.dumps(explanations, ensure_ascii=False)
 )
 
-html_path = r'c:\Users\Mohammed26\Desktop\مخطط سيموليشن\04_Interactive_Explanation.html'
+html_path = r'c:\Users\Mohammed26\Desktop\┘à╪«╪╖╪╖ ╪│┘è┘à┘ê┘ä┘è╪┤┘å\04_Interactive_Explanation.html'
 with open(html_path, 'w', encoding='utf-8') as f:
     f.write(html_content)
 
