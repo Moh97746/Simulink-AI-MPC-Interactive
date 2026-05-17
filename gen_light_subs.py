@@ -73,6 +73,7 @@ draw_ortho_arrow(ax, [(19.5, 5.3), (21, 5.3)], COLORS['ai'], gid='ai_path_16')
 
 save_fig(fig, r'c:\Users\Mohammed26\Desktop\مخطط سيموليشن\02_AI_BLOCK_Final.png', dpi=300)
 save_fig(fig, r'c:\Users\Mohammed26\Desktop\مخطط سيموليشن\02_AI_BLOCK_Final.svg', dpi=300)
+save_fig(fig, r'c:\Users\Mohammed26\Desktop\مخطط سيموليشن\02_AI_BLOCK_Final.pdf', dpi=600)
 
 
 # ============================================================
@@ -130,3 +131,4 @@ ax.text(9, -0.2, r'$A$: Tank Area  |  IC: $4\,\mathrm{m}$  |  $H_{\max}$: Max He
 
 save_fig(fig, r'c:\Users\Mohammed26\Desktop\مخطط سيموليشن\03_Water_Tank_Final.png', dpi=300)
 save_fig(fig, r'c:\Users\Mohammed26\Desktop\مخطط سيموليشن\03_Water_Tank_Final.svg', dpi=300)
+save_fig(fig, r'c:\Users\Mohammed26\Desktop\مخطط سيموليشن\03_Water_Tank_Final.pdf', dpi=600)

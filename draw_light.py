@@ -135,3 +135,31 @@ def save_fig(fig, path, dpi=300):
                 edgecolor='none', bbox_inches='tight', pad_inches=0.4)
     plt.close(fig)
     print(f"Saved: {path.split(chr(92))[-1]}")
+
+class GridBuilder:
+    """A layout engine for placing blocks in rows or columns with dynamic spacing."""
+    def __init__(self, start_x=0, start_y=0, spacing_x=2.0, spacing_y=2.0):
+        self.cursor_x = start_x
+        self.cursor_y = start_y
+        self.spacing_x = spacing_x
+        self.spacing_y = spacing_y
+
+    def place_horizontal(self, count, width=1.5, height=1.0):
+        """Returns a list of (x,y) tuples for horizontal placement."""
+        coords = []
+        for _ in range(count):
+            coords.append((self.cursor_x, self.cursor_y))
+            self.cursor_x += width + self.spacing_x
+        return coords
+
+    def place_vertical(self, count, width=1.5, height=1.0):
+        """Returns a list of (x,y) tuples for vertical placement."""
+        coords = []
+        for _ in range(count):
+            coords.append((self.cursor_x, self.cursor_y))
+            self.cursor_y -= (height + self.spacing_y)
+        return coords
+    
+    def reset(self, x=0, y=0):
+        self.cursor_x = x
+        self.cursor_y = y

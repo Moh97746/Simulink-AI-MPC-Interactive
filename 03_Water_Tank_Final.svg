@@ -6,7 +6,7 @@
   <rdf:RDF xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:cc="http://creativecommons.org/ns#" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
    <cc:Work>
     <dc:type rdf:resource="http://purl.org/dc/dcmitype/StillImage"/>
-    <dc:date>2026-05-15T22:42:31.169430</dc:date>
+    <dc:date>2026-05-17T23:13:37.716990</dc:date>
     <dc:format>image/svg+xml</dc:format>
     <dc:creator>
      <cc:Agent>
@@ -40,7 +40,7 @@ Q 81.468 164.628 81.468 172.944
 L 81.468 228.384 
 Q 81.468 236.7 89.784 236.7 
 z
-" clip-path="url(#p4eae53df21)" style="fill: #94a3b8; opacity: 0.3"/>
+" clip-path="url(#p660a8717a3)" style="fill: #94a3b8; opacity: 0.3"/>
    </g>
    <g id="patch_3">
     <path d="M 89.784 347.58 
@@ -53,7 +53,7 @@ Q 81.468 275.508 81.468 283.824
 L 81.468 339.264 
 Q 81.468 347.58 89.784 347.58 
 z
-" clip-path="url(#p4eae53df21)" style="fill: #94a3b8; opacity: 0.3"/>
+" clip-path="url(#p660a8717a3)" style="fill: #94a3b8; opacity: 0.3"/>
    </g>
    <g id="patch_4">
     <path d="M 616.464 308.772 
@@ -66,7 +66,7 @@ Q 608.148 203.436 608.148 211.752
 L 608.148 300.456 
 Q 608.148 308.772 616.464 308.772 
 z
-" clip-path="url(#p4eae53df21)" style="fill: #94a3b8; opacity: 0.3"/>
+" clip-path="url(#p660a8717a3)" style="fill: #94a3b8; opacity: 0.3"/>
    </g>
    <g id="patch_5">
     <path d="M 810.504 308.772 
@@ -79,7 +79,7 @@ Q 802.188 203.436 802.188 211.752
 L 802.188 300.456 
 Q 802.188 308.772 810.504 308.772 
 z
-" clip-path="url(#p4eae53df21)" style="fill: #94a3b8; opacity: 0.3"/>
+" clip-path="url(#p660a8717a3)" style="fill: #94a3b8; opacity: 0.3"/>
    </g>
    <g id="patch_6">
     <path d="M 1004.544 297.684 
@@ -92,7 +92,7 @@ Q 996.228 214.524 996.228 222.84
 L 996.228 289.368 
 Q 996.228 297.684 1004.544 297.684 
 z
-" clip-path="url(#p4eae53df21)" style="fill: #94a3b8; opacity: 0.3"/>
+" clip-path="url(#p660a8717a3)" style="fill: #94a3b8; opacity: 0.3"/>
    </g>
    <g id="wt_qin">
     <path d="M 84.24 231.156 
@@ -105,7 +105,7 @@ Q 75.924 159.084 75.924 167.4
 L 75.924 222.84 
 Q 75.924 231.156 84.24 231.156 
 z
-" clip-path="url(#p4eae53df21)" style="fill: #eff6ff; stroke: #2563eb; stroke-width: 2; stroke-linejoin: miter"/>
+" clip-path="url(#p660a8717a3)" style="fill: #eff6ff; stroke: #2563eb; stroke-width: 2; stroke-linejoin: miter"/>
    </g>
    <g id="wt_qout">
     <path d="M 84.24 342.036 
@@ -118,7 +118,7 @@ Q 75.924 269.964 75.924 278.28
 L 75.924 333.72 
 Q 75.924 342.036 84.24 342.036 
 z
-" clip-path="url(#p4eae53df21)" style="fill: #eff6ff; stroke: #2563eb; stroke-width: 2; stroke-linejoin: miter"/>
+" clip-path="url(#p660a8717a3)" style="fill: #eff6ff; stroke: #2563eb; stroke-width: 2; stroke-linejoin: miter"/>
    </g>
    <g id="wt_sum">
     <path d="M 278.28 289.368 
@@ -131,14 +131,14 @@ C 243.561056 230.396144 239.472 240.267998 239.472 250.56
 C 239.472 260.852002 243.561056 270.723856 250.8386 278.0014 
 C 258.116144 285.278944 267.987998 289.368 278.28 289.368 
 z
-" clip-path="url(#p4eae53df21)" style="fill: #ffffff; stroke: #059669; stroke-width: 2; stroke-linejoin: miter"/>
+" clip-path="url(#p660a8717a3)" style="fill: #ffffff; stroke: #059669; stroke-width: 2; stroke-linejoin: miter"/>
    </g>
    <g id="wt_gain">
     <path d="M 389.16 294.912 
 L 527.76 250.56 
 L 389.16 206.208 
 z
-" clip-path="url(#p4eae53df21)" style="fill: #ffffff; stroke: #059669; stroke-width: 2; stroke-linejoin: miter"/>
+" clip-path="url(#p660a8717a3)" style="fill: #ffffff; stroke: #059669; stroke-width: 2; stroke-linejoin: miter"/>
    </g>
    <g id="wt_int">
     <path d="M 610.92 303.228 
@@ -151,7 +151,7 @@ Q 602.604 197.892 602.604 206.208
 L 602.604 294.912 
 Q 602.604 303.228 610.92 303.228 
 z
-" clip-path="url(#p4eae53df21)" style="fill: #eff6ff; stroke: #2563eb; stroke-width: 2; stroke-linejoin: miter"/>
+" clip-path="url(#p660a8717a3)" style="fill: #eff6ff; stroke: #2563eb; stroke-width: 2; stroke-linejoin: miter"/>
    </g>
    <g id="wt_sat">
     <path d="M 804.96 303.228 
@@ -164,7 +164,7 @@ Q 796.644 197.892 796.644 206.208
 L 796.644 294.912 
 Q 796.644 303.228 804.96 303.228 
 z
-" clip-path="url(#p4eae53df21)" style="fill: #faf5ff; stroke: #9333ea; stroke-width: 2; stroke-linejoin: miter"/>
+" clip-path="url(#p660a8717a3)" style="fill: #faf5ff; stroke: #9333ea; stroke-width: 2; stroke-linejoin: miter"/>
    </g>
    <g id="wt_ht">
     <path d="M 999 292.14 
@@ -177,7 +177,7 @@ Q 990.684 208.98 990.684 217.296
 L 990.684 283.824 
 Q 990.684 292.14 999 292.14 
 z
-" clip-path="url(#p4eae53df21)" style="fill: #d1fae5; stroke: #059669; stroke-width: 2; stroke-linejoin: miter"/>
+" clip-path="url(#p660a8717a3)" style="fill: #d1fae5; stroke: #059669; stroke-width: 2; stroke-linejoin: miter"/>
    </g>
    <g id="patch_7">
     <path d="M 250.56 455.688 
@@ -190,7 +190,7 @@ Q 239.472 366.984 239.472 378.072
 L 239.472 444.6 
 Q 239.472 455.688 250.56 455.688 
 z
-" clip-path="url(#p4eae53df21)" style="fill: #f8fafc; stroke: #cbd5e1; stroke-width: 1.5; stroke-linejoin: miter"/>
+" clip-path="url(#p660a8717a3)" style="fill: #f8fafc; stroke: #cbd5e1; stroke-width: 1.5; stroke-linejoin: miter"/>
    </g>
    <g id="text_1">
     <!-- Water Tank Model  —  Mass Balance Subsystem -->
@@ -2218,7 +2218,7 @@ z
   </g>
  </g>
  <defs>
-  <clipPath id="p4eae53df21">
+  <clipPath id="p660a8717a3">
    <rect x="28.8" y="28.8" width="1108.8" height="443.52"/>
   </clipPath>
  </defs>

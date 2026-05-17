@@ -143,3 +143,4 @@ draw_ortho_arrow(ax, [(38, 9.5), (38, 0.5), (15.5, 0.5), (15.5, 2.5)],
 
 save_fig(fig, r'c:\Users\Mohammed26\Desktop\مخطط سيموليشن\01_Root_Level_Final.png', dpi=300)
 save_fig(fig, r'c:\Users\Mohammed26\Desktop\مخطط سيموليشن\01_Root_Level_Final.svg', dpi=300)
+save_fig(fig, r'c:\Users\Mohammed26\Desktop\مخطط سيموليشن\01_Root_Level_Final.pdf', dpi=600)

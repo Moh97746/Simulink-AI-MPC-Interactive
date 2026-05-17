@@ -1,0 +1,89 @@
+
+
+disp('Plotting 24h PV water pumping system (FINAL STABLE MODE)')
+
+%% ===== Extract data safely =====
+% ---- GHI ----
+if isa(out.GHI,'timeseries')
+    GHI   = out.GHI.Data;
+else
+    GHI   = out.GHI;
+end
+
+% ---- Power ----
+if isa(out.Power,'timeseries')
+    Power = out.Power.Data;
+else
+    Power = out.Power;
+end
+
+% ---- Speed ----
+if isa(out.Speed,'timeseries')
+    Speed = out.Speed.Data;
+else
+    Speed = out.Speed;
+end
+
+% ---- Tank ----
+if isa(out.Tank,'timeseries')
+    Tank  = out.Tank.Data;
+else
+    Tank  = out.Tank;
+end
+
+%% ===== Time vector (0 → 23 hours) =====
+N = length(GHI);
+t = linspace(0,23,N);
+
+%% ===== Plot settings =====
+figure('Color','w','Position',[100 50 1000 900])
+tiledlayout(4,1,'TileSpacing','compact','Padding','compact')
+
+LW = 2;
+FS = 11;
+hour_ticks = 0:1:23;
+
+%% ===== 1) Solar Irradiance =====
+nexttile
+plot(t,GHI,'LineWidth',LW)
+grid on
+ylabel('GHI (W/m^2)','FontSize',FS)
+title('Solar Irradiance')
+xlim([0 23])
+xticks(hour_ticks)
+ylim([0 1000])
+
+%% ===== 2) PV Output Power =====
+nexttile
+plot(t,Power,'LineWidth',LW)
+grid on
+ylabel('Power (W)','FontSize',FS)
+title('PV Output Power')
+xlim([0 23])
+xticks(hour_ticks)
+ylim([0 max(Power)*1.1])
+
+%% ===== 3) Pump Motor Speed =====
+nexttile
+plot(t,Speed,'LineWidth',LW)
+grid on
+ylabel('Speed (RPM)','FontSize',FS)
+title('Pump Motor Speed')
+xlim([0 23])
+xticks(hour_ticks)
+ylim([0 1500])
+
+%% ===== 4) Water Tank Level =====
+nexttile
+plot(t,Tank,'LineWidth',LW)
+grid on
+ylabel('Tank Level (m)','FontSize',FS)
+xlabel('Time (hours)','FontSize',FS)
+title('Water Tank Level')
+xlim([0 23])
+xticks(hour_ticks)
+ylim([0 6])
+
+%% ===== Main title =====
+sgtitle('24-Hour Dynamic Behavior of PV Water Pumping System',...
+        'FontSize',14,'FontWeight','bold')

@@ -109,6 +109,16 @@ html_template = """<!DOCTYPE html>
             filter: drop-shadow(0 0 6px rgba(245, 158, 11, 0.6));
             transition: 0.3s;
         }}
+        
+        /* Control Center Styles */
+        .btn-ctrl {{ background: #F1F5F9; color: #475569; border: 1px solid #CBD5E1; padding: 10px 15px; border-radius: 6px; font-weight: bold; cursor: pointer; transition: 0.2s; }}
+        .btn-ctrl:hover {{ background: #E2E8F0; }}
+        .ctrl-panel {{ display: none; position: absolute; top: 50px; right: 0; width: 240px; background: white; border: 1px solid #E2E8F0; box-shadow: 0 10px 25px rgba(0,0,0,0.1); border-radius: 8px; padding: 15px; z-index: 100; flex-direction: column; }}
+        .ctrl-panel.active {{ display: flex; }}
+        .ctrl-panel label {{ cursor: pointer; margin-bottom: 10px; display: flex; align-items: center; color: #334155; font-size: 14px; }}
+        .ctrl-panel input[type="checkbox"] {{ margin-left: 8px; width: 16px; height: 16px; cursor: pointer; }}
+        .btn-export {{ background: #2563EB; color: white; border: none; padding: 8px; border-radius: 4px; cursor: pointer; width: 100%; font-weight: bold; transition: 0.2s; }}
+        .btn-export:hover {{ opacity: 0.9; transform: scale(1.02); }}
     </style>
 </head>
 <body>
@@ -119,9 +129,18 @@ html_template = """<!DOCTYPE html>
                 <div class="tab" onclick="switchTab(1)">الذكاء الاصطناعي (AI Block)</div>
                 <div class="tab" onclick="switchTab(2)">خزان المياه (Water Tank)</div>
             </div>
-            <div style="display: flex; align-items: center; margin-left: 15px; color: #475569; font-weight: bold; font-size: 14px;">
-                <input type="checkbox" id="autoCam" checked style="margin-left: 5px; width: 16px; height: 16px; cursor: pointer;">
-                <label for="autoCam" style="cursor: pointer;">🎥 كاميرا التتبع</label>
+            <div style="position: relative; margin-left: 15px; display: flex; align-items: center;">
+                <button class="btn-ctrl" onclick="document.getElementById('ctrl-panel').classList.toggle('active')">⚙️ مركز التحكم</button>
+                <div id="ctrl-panel" class="ctrl-panel">
+                    <label><input type="checkbox" id="autoCam" checked> 🎥 كاميرا التتبع التلقائي</label>
+                    <label><input type="checkbox" id="toggleSidebar" checked onchange="document.getElementById('sidebar').style.display = this.checked ? 'flex' : 'none'"> 🗂️ عرض شريط الشرح</label>
+                    <hr style="margin: 10px 0; border: 0; border-top: 1px solid #E2E8F0; width: 100%;">
+                    <div style="margin-bottom: 5px; font-weight: bold; color: #475569; font-size: 13px;">⏱️ سرعة المحاكاة</div>
+                    <input type="range" id="simSpeed" min="0.5" max="2" step="0.5" value="1" style="width: 100%; direction: ltr;">
+                    <hr style="margin: 10px 0; border: 0; border-top: 1px solid #E2E8F0; width: 100%;">
+                    <button class="btn-export" onclick="export4KPNG()">📥 تصدير 4K PNG</button>
+                    <button class="btn-export" style="margin-top: 8px; background: #475569;" onclick="exportSVG()">📥 تصدير SVG الأصلي</button>
+                </div>
             </div>
             <button id="simBtn" class="btn-sim" onclick="toggleSimulation()">▶ تشغيل المحاكاة</button>
         </div>
@@ -255,13 +274,16 @@ html_template = """<!DOCTYPE html>
             stopSimulation();
             switchTab(0);
             
+            const speed = parseFloat(document.getElementById('simSpeed').value) || 1;
+            const dt = 1 / speed;
+            
             // Phase 1
             simIntervals.push(setTimeout(() => {{
                 flyTo(250, 50, 1.3, 0);
                 addFlow('[id^="path_in_"], [id^="path_ghi"], [id^="path_temp"], [id^="path_day_"]');
                 addFlow('#block_mux_1, #block_mux_2, #block_day_root', 'block');
                 updateSimText('المرحلة 1: تجميع الإشارات', 'يتم التقاط قراءات الإشعاع الشمسي والحرارة وتمريرها عبر الـ Multiplexers نحو الطبقة الفيزيائية. كما يتم اختيار اليوم المطلوب وارساله للذكاء الاصطناعي.');
-            }}, 500));
+            }}, 500 * dt));
 
             // Phase 2
             simIntervals.push(setTimeout(() => {{
@@ -269,7 +291,7 @@ html_template = """<!DOCTYPE html>
                 addFlow('#block_ai', 'block');
                 addFlow('[id^="path_ai_"]');
                 updateSimText('المرحلة 2: التنبؤ (الذكاء الاصطناعي)', 'يستقبل الذكاء الاصطناعي بيانات اليوم ويبدأ بحساب الإشعاع المتوقع GHI_pred وتمريره لمدير التحكم.');
-            }}, 3500));
+            }}, 3500 * dt));
 
             // Phase 3
             simIntervals.push(setTimeout(() => {{
@@ -278,7 +300,7 @@ html_template = """<!DOCTYPE html>
                 addFlow('[id^="path_mgr_"]');
                 addFlow('[id^="path_clock"], #block_time_root', 'block');
                 updateSimText('المرحلة 3: التوجيه المرجعي', 'يحسب المدير المرجعي MPC Manager التدفق المستهدف (Q_ref) ويرسله كإشارة تغذية أمامية (Feedforward) للعاكس مباشرة، وكهدف للمتحكم السفلي.');
-            }}, 6500));
+            }}, 6500 * dt));
 
             // Phase 4
             simIntervals.push(setTimeout(() => {{
@@ -286,7 +308,7 @@ html_template = """<!DOCTYPE html>
                 addFlow('#block_mpc_ctrl', 'block');
                 addFlow('[id^="path_mpc_cmd"]');
                 updateSimText('المرحلة 4: الحسابات الرياضية (التحكم)', 'يقوم متحكم MPC Controller بحل معادلات Optimization معقدة لضمان استقرار الخزان والمضخة معاً، ثم يصدر إشارة التحكم (Command) لمتحكم الفولتية.');
-            }}, 9500));
+            }}, 9500 * dt));
 
             // Phase 5
             simIntervals.push(setTimeout(() => {{
@@ -294,7 +316,7 @@ html_template = """<!DOCTYPE html>
                 addFlow('#block_pv, #block_fopid, #block_vfd, #block_pump', 'block');
                 addFlow('[id^="path_pv"], [id^="path_fopid"], [id^="path_vfd"], [id^="path_pump"]');
                 updateSimText('المرحلة 5: تشغيل المضخة وتدفق الطاقة', 'يتم استخراج الطاقة من اللوح الشمسي P_pv، ثم تتولى الـ FOPID تنقية الطاقة الذاهبة للـ VFD لتشغيل المضخة وإنتاج التدفق Q_raw.');
-            }}, 12500));
+            }}, 12500 * dt));
 
             // Phase 6
             simIntervals.push(setTimeout(() => {{
@@ -304,7 +326,7 @@ html_template = """<!DOCTYPE html>
                 addFlow('[id^="path_fb_"]');
                 addFlow('#block_delay_root', 'block');
                 updateSimText('المرحلة 6: موازنة الخزان والتغذية الراجعة', 'يصل التدفق للخزان، وتُحسب الزيادة في المنسوب H(t). ثم تعود الإشارة كـ Feedback في المسار السفلي الطويل وتمر عبر الـ Delay استعداداً للثانية القادمة.');
-            }}, 15500));
+            }}, 15500 * dt));
             
             // Phase 7 Reset View
             simIntervals.push(setTimeout(() => {{
@@ -313,7 +335,7 @@ html_template = """<!DOCTYPE html>
                 document.getElementById('simBtn').innerHTML = '▶ إعادة المحاكاة';
                 document.getElementById('simBtn').classList.remove('running');
                 isSimulating = false;
-            }}, 21000));
+            }}, 21000 * dt));
         }}
         // Pan and Zoom Logic
         let scales = [1, 1, 1];
@@ -370,6 +392,76 @@ html_template = """<!DOCTYPE html>
                 
                 wrapper.style.transform = `translate(${{translates[index].x}}px, ${{translates[index].y}}px) scale(${{scales[index]}})`;
             }});
+        }});
+        
+        // Export Functions
+        function getActiveSVG() {{
+            return document.querySelector('.svg-container.active svg');
+        }}
+
+        function exportSVG() {{
+            const svg = getActiveSVG();
+            if(!svg) return;
+            const serializer = new XMLSerializer();
+            let source = serializer.serializeToString(svg);
+            if(!source.match(/^<svg[^>]+xmlns="http\\:\\/\\/www\\.w3\\.org\\/2000\\/svg"/)){{
+                source = source.replace(/^<svg/, '<svg xmlns="http://www.w3.org/2000/svg"');
+            }}
+            const url = "data:image/svg+xml;charset=utf-8," + encodeURIComponent(source);
+            const a = document.createElement("a");
+            a.href = url;
+            a.download = "simulink_diagram.svg";
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+        }}
+
+        function export4KPNG() {{
+            const svg = getActiveSVG();
+            if(!svg) return;
+            const serializer = new XMLSerializer();
+            let source = serializer.serializeToString(svg);
+            if(!source.match(/^<svg[^>]+xmlns="http\\:\\/\\/www\\.w3\\.org\\/2000\\/svg"/)){{
+                source = source.replace(/^<svg/, '<svg xmlns="http://www.w3.org/2000/svg"');
+            }}
+            
+            // Parse Matplotlib viewBox for high native resolution
+            const viewBox = svg.getAttribute('viewBox').split(' ');
+            let width = parseFloat(viewBox[2]);
+            let height = parseFloat(viewBox[3]);
+            
+            if (!width) {{ width = 3840; height = 2160; }} // 4K Fallback
+            
+            const canvas = document.createElement('canvas');
+            canvas.width = width;
+            canvas.height = height;
+            const ctx = canvas.getContext('2d');
+            
+            // Force white background
+            ctx.fillStyle = '#FFFFFF';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            const img = new Image();
+            const url = "data:image/svg+xml;charset=utf-8," + encodeURIComponent(source);
+            img.onload = function() {{
+                ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+                const a = document.createElement("a");
+                a.download = "simulink_diagram_highres.png";
+                a.href = canvas.toDataURL("image/png");
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+            }};
+            img.src = url;
+        }}
+        
+        // Close Control Panel if clicked outside
+        document.addEventListener('click', (e) => {{
+            const panel = document.getElementById('ctrl-panel');
+            const btn = document.querySelector('.btn-ctrl');
+            if (panel.classList.contains('active') && !panel.contains(e.target) && e.target !== btn) {{
+                panel.classList.remove('active');
+            }}
         }});
     </script>
 </body>
