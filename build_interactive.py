@@ -130,7 +130,6 @@ html_template = """<!DOCTYPE html>
                 <div class="tab" onclick="switchTab(2)">خزان المياه (Water Tank)</div>
             </div>
             <div style="position: relative; margin-left: 15px; display: flex; align-items: center;">
-                <button class="btn-ctrl" id="langToggle" onclick="toggleLanguage()">🌐 English</button>
                 <button class="btn-ctrl" onclick="document.getElementById('ctrl-panel').classList.toggle('active')">⚙️ مركز التحكم</button>
                 <div id="ctrl-panel" class="ctrl-panel">
                     <label><input type="checkbox" id="autoCam" checked> 🎥 كاميرا التتبع التلقائي</label>
@@ -141,6 +140,8 @@ html_template = """<!DOCTYPE html>
                     <hr style="margin: 10px 0; border: 0; border-top: 1px solid #E2E8F0; width: 100%;">
                     <button class="btn-export" onclick="export4KPNG()">📥 تصدير 8K PNG</button>
                     <button class="btn-export" style="margin-top: 8px; background: #475569;" onclick="exportSVG()">📥 تصدير SVG الأصلي</button>
+                    <hr style="margin: 10px 0; border: 0; border-top: 1px solid #E2E8F0; width: 100%;">
+                    <button class="btn-export" id="langToggle" style="margin-top: 0; background: #0F172A;" onclick="toggleLanguage()">🌐 English</button>
                 </div>
             </div>
             <button id="simBtn" class="btn-sim" onclick="toggleSimulation()">▶ تشغيل المحاكاة</button>
