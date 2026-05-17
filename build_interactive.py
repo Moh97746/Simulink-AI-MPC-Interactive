@@ -192,16 +192,68 @@ html_template = """<!DOCTYPE html>
 
         function toggleLanguage() {{
             lang = lang === 'ar' ? 'en' : 'ar';
-            document.getElementById('langToggle').innerText = lang === 'ar' ? '🌐 English' : '🌐 عربي';
-            document.documentElement.dir = lang === 'ar' ? 'rtl' : 'ltr';
-            document.documentElement.lang = lang;
+            const L = {{
+                'ar': {{
+                    langBtn: '🌐 English', tab0: 'المخطط الرئيسي (Root)', tab1: 'الذكاء الاصطناعي (AI Block)', tab2: 'خزان المياه (Water Tank)',
+                    simPlay: '▶ تشغيل المحاكاة', simStop: '■ إيقاف المحاكاة', simReplay: '▶ إعادة المحاكاة',
+                    ctrl: '⚙️ مركز التحكم', cam: '🎥 كاميرا التتبع التلقائي', sidebar: '🗂️ عرض شريط الشرح', dark: '🌙 الوضع الليلي',
+                    speed: '⏱️ سرعة المحاكاة', png: '📥 تصدير 8K PNG', svg: '📥 تصدير SVG الأصلي',
+                    sideTitle: 'التفاصيل والشرح',
+                    ph: 'انقر على أي عنصر أو بلوك مهما كان صغيراً لعرض شرحه التفصيلي.<br><br>اضغط على "تشغيل المحاكاة" لتتبع مسار الإشارات والطاقة عبر الأسلاك والبلوكات.<br><br>💡 يمكنك استخدام عجلة الفأرة (Scroll) للتكبير والسحب للتحريك.',
+                    stopPh: 'تم إيقاف المحاكاة. انقر على البلوكات للتصفح الحُر.',
+                    p1t: 'المرحلة 1: تجميع الإشارات', p1: 'يتم التقاط قراءات الإشعاع الشمسي والحرارة وتمريرها عبر الـ Multiplexers نحو الطبقة الفيزيائية. كما يتم اختيار اليوم المطلوب وارساله للذكاء الاصطناعي.',
+                    p2t: 'المرحلة 2: التنبؤ (الذكاء الاصطناعي)', p2: 'يستقبل الذكاء الاصطناعي بيانات اليوم ويبدأ بحساب الإشعاع المتوقع GHI_pred وتمريره لمدير التحكم.',
+                    p3t: 'المرحلة 3: التوجيه المرجعي', p3: 'يحسب المدير المرجعي MPC Manager التدفق المستهدف (Q_ref) ويرسله كإشارة تغذية أمامية (Feedforward) للعاكس مباشرة، وكهدف للمتحكم السفلي.',
+                    p4t: 'المرحلة 4: الحسابات الرياضية (التحكم)', p4: 'يقوم متحكم MPC Controller بحل معادلات Optimization معقدة لضمان استقرار الخزان والمضخة معاً، ثم يصدر إشارة التحكم (Command) لمتحكم الفولتية.',
+                    p5t: 'المرحلة 5: تشغيل المضخة وتدفق الطاقة', p5: 'يتم استخراج الطاقة من اللوح الشمسي P_pv، ثم تتولى الـ FOPID تنقية الطاقة الذاهبة للـ VFD لتشغيل المضخة وإنتاج التدفق Q_raw.',
+                    p6t: 'المرحلة 6: موازنة الخزان والتغذية الراجعة', p6: 'يصل التدفق للخزان، وتُحسب الزيادة في المنسوب H(t). ثم تعود الإشارة كـ Feedback في المسار السفلي الطويل وتمر عبر الـ Delay استعداداً للثانية القادمة.',
+                    p7t: 'اكتملت المحاكاة', p7: 'دورة التحكم اكتملت بنجاح. يمكنك إعادة التشغيل أو التصفح الحُر.'
+                }},
+                'en': {{
+                    langBtn: '🌐 عربي', tab0: 'Root Diagram', tab1: 'AI Block', tab2: 'Water Tank',
+                    simPlay: '▶ Run Simulation', simStop: '■ Stop', simReplay: '▶ Replay',
+                    ctrl: '⚙️ Control Center', cam: '🎥 Auto Camera', sidebar: '🗂️ Show Sidebar', dark: '🌙 Dark Mode',
+                    speed: '⏱️ Simulation Speed', png: '📥 Export 8K PNG', svg: '📥 Export SVG',
+                    sideTitle: 'Details & Explanation',
+                    ph: 'Click any block to view its explanation.<br><br>Press "Run Simulation" to trace signal flow.<br><br>💡 Use mouse wheel to zoom, drag to pan.',
+                    stopPh: 'Simulation stopped. Click blocks to browse.',
+                    p1t: 'Phase 1: Signal Gathering', p1: 'Solar irradiance and temperature readings are captured and routed through Multiplexers to the physical layer. The target day is selected and sent to the AI predictor.',
+                    p2t: 'Phase 2: AI Prediction', p2: 'The AI neural network receives day data and computes the predicted irradiance (GHI_pred), forwarding it to the MPC Manager.',
+                    p3t: 'Phase 3: Reference Guidance', p3: 'The MPC Manager computes the target flow (Q_ref) and sends it as a feed-forward signal to the inverter and as a setpoint for the low-level controller.',
+                    p4t: 'Phase 4: Optimization (Control)', p4: 'The MPC Controller solves complex optimization equations to stabilize the tank and pump, then issues the control command to the VFD.',
+                    p5t: 'Phase 5: Pump & Power Flow', p5: 'Power is extracted from the PV panel (P_pv), refined by FOPID, and fed to the VFD to drive the pump and produce raw flow (Q_raw).',
+                    p6t: 'Phase 6: Tank Balance & Feedback', p6: 'Flow reaches the tank, changing the water level H(t). The signal returns as feedback through the delay block, preparing for the next control cycle.',
+                    p7t: 'Simulation Complete', p7: 'Control cycle completed successfully. You can replay or explore freely.'
+                }}
+            }};
+            const t = L[lang];
+            document.getElementById('langToggle').innerText = t.langBtn;
+            document.querySelectorAll('.tab')[0].innerText = t.tab0;
+            document.querySelectorAll('.tab')[1].innerText = t.tab1;
+            document.querySelectorAll('.tab')[2].innerText = t.tab2;
+            document.querySelector('.btn-ctrl').innerText = t.ctrl;
+            const simBtn = document.getElementById('simBtn');
+            if (!isSimulating) simBtn.innerText = t.simPlay;
+            else simBtn.innerText = t.simStop;
+            const labels = document.querySelectorAll('#ctrl-panel label');
+            if(labels[0]) labels[0].lastChild.textContent = ' ' + t.cam;
+            if(labels[1]) labels[1].lastChild.textContent = ' ' + t.sidebar;
+            if(labels[2]) labels[2].lastChild.textContent = ' ' + t.dark;
+            document.querySelector('#ctrl-panel div').innerText = t.speed;
+            const exports = document.querySelectorAll('.btn-export');
+            exports[0].innerText = t.png;
+            exports[1].innerText = t.svg;
+            document.querySelector('#sidebar h1').innerText = t.sideTitle;
             if (currentActive) {{
                 const g = currentActive.closest('g') || currentActive.parentNode;
                 if (g && g.id && explanations[g.id]) {{
                     const d = explanations[g.id];
                     document.getElementById('info-content').innerHTML = `<div id="info-title">${{d.title}}</div><div id="info-text">${{lang==='en' && d.text_en ? d.text_en : d.text}}</div>`;
                 }}
+            }} else if (!isSimulating) {{
+                document.getElementById('info-content').innerHTML = '<div class="placeholder">' + t.ph + '</div>';
             }}
+            window._L = t;
         }}
 
         function switchTab(index) {{
@@ -256,15 +308,16 @@ html_template = """<!DOCTYPE html>
 
         function toggleSimulation() {{
             const btn = document.getElementById('simBtn');
+            const t = window._L || {{simPlay: '▶ تشغيل المحاكاة', simStop: '■ إيقاف المحاكاة'}};
             if (isSimulating) {{
                 stopSimulation();
-                btn.innerHTML = '▶ تشغيل المحاكاة';
+                btn.innerHTML = t.simPlay;
                 btn.classList.remove('running');
                 isSimulating = false;
             }} else {{
-                switchTab(0); // Run root simulation
+                switchTab(0);
                 startRootSimulation();
-                btn.innerHTML = '■ إيقاف المحاكاة';
+                btn.innerHTML = t.simStop;
                 btn.classList.add('running');
                 isSimulating = true;
             }}
@@ -276,7 +329,8 @@ html_template = """<!DOCTYPE html>
             document.querySelectorAll('.flowing-path, .flowing-block').forEach(el => {{
                 el.classList.remove('flowing-path', 'flowing-block');
             }});
-            document.getElementById('info-content').innerHTML = '<div class="placeholder">تم إيقاف المحاكاة. انقر على البلوكات للتصفح الحُر.</div>';
+            const t = window._L || {{stopPh: 'تم إيقاف المحاكاة. انقر على البلوكات للتصفح الحُر.'}};
+            document.getElementById('info-content').innerHTML = '<div class="placeholder">' + t.stopPh + '</div>';
         }}
 
         function addFlow(selector, type='path') {{
@@ -323,7 +377,7 @@ html_template = """<!DOCTYPE html>
                 flyTo(250, 50, 1.3, 0);
                 addFlow('[id^="path_in_"], [id^="path_ghi"], [id^="path_temp"], [id^="path_day_"]');
                 addFlow('#block_mux_1, #block_mux_2, #block_day_root', 'block');
-                updateSimText('المرحلة 1: تجميع الإشارات', 'يتم التقاط قراءات الإشعاع الشمسي والحرارة وتمريرها عبر الـ Multiplexers نحو الطبقة الفيزيائية. كما يتم اختيار اليوم المطلوب وارساله للذكاء الاصطناعي.');
+                const t = window._L || {{}}; updateSimText(t.p1t || 'المرحلة 1', t.p1 || '');
             }}, 500 * dt));
 
             // Phase 2
@@ -331,7 +385,7 @@ html_template = """<!DOCTYPE html>
                 flyTo(150, -150, 1.4, 0);
                 addFlow('#block_ai', 'block');
                 addFlow('[id^="path_ai_"]');
-                updateSimText('المرحلة 2: التنبؤ (الذكاء الاصطناعي)', 'يستقبل الذكاء الاصطناعي بيانات اليوم ويبدأ بحساب الإشعاع المتوقع GHI_pred وتمريره لمدير التحكم.');
+                const t = window._L || {{}}; updateSimText(t.p2t || 'المرحلة 2', t.p2 || '');
             }}, 3500 * dt));
 
             // Phase 3
@@ -340,7 +394,7 @@ html_template = """<!DOCTYPE html>
                 addFlow('#block_mpc_mgr', 'block');
                 addFlow('[id^="path_mgr_"]');
                 addFlow('[id^="path_clock"], #block_time_root', 'block');
-                updateSimText('المرحلة 3: التوجيه المرجعي', 'يحسب المدير المرجعي MPC Manager التدفق المستهدف (Q_ref) ويرسله كإشارة تغذية أمامية (Feedforward) للعاكس مباشرة، وكهدف للمتحكم السفلي.');
+                const t = window._L || {{}}; updateSimText(t.p3t || 'المرحلة 3', t.p3 || '');
             }}, 6500 * dt));
 
             // Phase 4
@@ -348,7 +402,7 @@ html_template = """<!DOCTYPE html>
                 flyTo(-300, -150, 1.4, 0);
                 addFlow('#block_mpc_ctrl', 'block');
                 addFlow('[id^="path_mpc_cmd"]');
-                updateSimText('المرحلة 4: الحسابات الرياضية (التحكم)', 'يقوم متحكم MPC Controller بحل معادلات Optimization معقدة لضمان استقرار الخزان والمضخة معاً، ثم يصدر إشارة التحكم (Command) لمتحكم الفولتية.');
+                const t = window._L || {{}}; updateSimText(t.p4t || 'المرحلة 4', t.p4 || '');
             }}, 9500 * dt));
 
             // Phase 5
@@ -356,7 +410,7 @@ html_template = """<!DOCTYPE html>
                 flyTo(-150, 150, 1.3, 0);
                 addFlow('#block_pv, #block_fopid, #block_vfd, #block_pump', 'block');
                 addFlow('[id^="path_pv"], [id^="path_fopid"], [id^="path_vfd"], [id^="path_pump"]');
-                updateSimText('المرحلة 5: تشغيل المضخة وتدفق الطاقة', 'يتم استخراج الطاقة من اللوح الشمسي P_pv، ثم تتولى الـ FOPID تنقية الطاقة الذاهبة للـ VFD لتشغيل المضخة وإنتاج التدفق Q_raw.');
+                const t = window._L || {{}}; updateSimText(t.p5t || 'المرحلة 5', t.p5 || '');
             }}, 12500 * dt));
 
             // Phase 6
@@ -366,14 +420,15 @@ html_template = """<!DOCTYPE html>
                 addFlow('[id^="path_gain"], [id^="path_tank_out"], [id^="path_demand"]');
                 addFlow('[id^="path_fb_"]');
                 addFlow('#block_delay_root', 'block');
-                updateSimText('المرحلة 6: موازنة الخزان والتغذية الراجعة', 'يصل التدفق للخزان، وتُحسب الزيادة في المنسوب H(t). ثم تعود الإشارة كـ Feedback في المسار السفلي الطويل وتمر عبر الـ Delay استعداداً للثانية القادمة.');
+                const t = window._L || {{}}; updateSimText(t.p6t || 'المرحلة 6', t.p6 || '');
             }}, 15500 * dt));
             
             // Phase 7 Reset View
             simIntervals.push(setTimeout(() => {{
                 flyTo(0, 0, 1, 0);
-                updateSimText('اكتملت المحاكاة', 'دورة التحكم اكتملت بنجاح. يمكنك إعادة التشغيل أو التصفح الحُر.');
-                document.getElementById('simBtn').innerHTML = '▶ إعادة المحاكاة';
+                const t = window._L || {{}};
+                updateSimText(t.p7t || 'اكتملت', t.p7 || '');
+                document.getElementById('simBtn').innerHTML = t.simReplay || '▶ إعادة المحاكاة';
                 document.getElementById('simBtn').classList.remove('running');
                 isSimulating = false;
             }}, 21000 * dt));
