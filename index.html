@@ -117,7 +117,6 @@
                     <label><input type="checkbox" id="autoCam" checked> 🎥 كاميرا التتبع التلقائي</label>
                     <label><input type="checkbox" id="toggleSidebar" checked onchange="document.getElementById('sidebar').style.display = this.checked ? 'flex' : 'none'"> 🗂️ عرض شريط الشرح</label>
                     <label><input type="checkbox" id="toggleDark" onchange="document.body.classList.toggle('dark', this.checked)"> 🌙 الوضع الليلي</label>
-                    <label><input type="checkbox" id="voiceNarration"> 🔊 الشرح الصوتي</label>
                     <hr style="margin: 10px 0; border: 0; border-top: 1px solid #E2E8F0; width: 100%;">
                     <div style="margin-bottom: 5px; font-weight: bold; color: #475569; font-size: 13px;" id="weatherTitle">🌤️ حالة الطقس (اختيار اليوم)</div>
                     <select id="weatherSelect" style="width: 100%; padding: 6px; margin-bottom: 10px; border-radius: 4px; border: 1px solid #CBD5E1; font-family: inherit; background: #F8FAFC; color: #334155; outline: none;" onchange="applyWeatherEffects()">
@@ -10882,7 +10881,7 @@ z
         window._L = {
             langBtn: '🌐 English', tab0: 'المخطط الرئيسي (Root)', tab1: 'الذكاء الاصطناعي (AI Block)', tab2: 'خزان المياه (Water Tank)',
             simPlay: '▶ تشغيل المحاكاة', simStop: '■ إيقاف المحاكاة', simReplay: '▶ إعادة المحاكاة', simPause: '⏸ إيقاف مؤقت', phaseOf: 'المرحلة {0} من {1}',
-            ctrl: '⚙️ مركز التحكم', cam: '🎥 كاميرا التتبع التلقائي', sidebar: '🗂️ عرض شريط الشرح', dark: '🌙 الوضع الليلي', voice: '🔊 الشرح الصوتي',
+            ctrl: '⚙️ مركز التحكم', cam: '🎥 كاميرا التتبع التلقائي', sidebar: '🗂️ عرض شريط الشرح', dark: '🌙 الوضع الليلي',
             speed: '⏱️ سرعة المحاكاة', png: '📥 تصدير 8K PNG', svg: '📥 تصدير SVG الأصلي',
             weatherTitle: '🌤️ حالة الطقس', weatherSunny: '☀️ يوم مشمس (Sunny)', weatherPCloudy: '⛅ غائم جزئياً (Partially Cloudy)', weatherFCloudy: '☁️ غائم كلياً (Fully Cloudy)',
             sideTitle: 'التفاصيل والشرح',
@@ -10903,7 +10902,7 @@ z
                 'ar': {
                     langBtn: '🌐 English', tab0: 'المخطط الرئيسي (Root)', tab1: 'الذكاء الاصطناعي (AI Block)', tab2: 'خزان المياه (Water Tank)',
                     simPlay: '▶ تشغيل المحاكاة', simStop: '■ إيقاف المحاكاة', simReplay: '▶ إعادة المحاكاة', simPause: '⏸ إيقاف مؤقت', phaseOf: 'المرحلة {0} من {1}',
-                    ctrl: '⚙️ مركز التحكم', cam: '🎥 كاميرا التتبع التلقائي', sidebar: '🗂️ عرض شريط الشرح', dark: '🌙 الوضع الليلي', voice: '🔊 الشرح الصوتي',
+                    ctrl: '⚙️ مركز التحكم', cam: '🎥 كاميرا التتبع التلقائي', sidebar: '🗂️ عرض شريط الشرح', dark: '🌙 الوضع الليلي',
                     speed: '⏱️ سرعة المحاكاة', png: '📥 تصدير 8K PNG', svg: '📥 تصدير SVG الأصلي',
                     weatherTitle: '🌤️ حالة الطقس', weatherSunny: '☀️ يوم مشمس (Sunny)', weatherPCloudy: '⛅ غائم جزئياً (Partially Cloudy)', weatherFCloudy: '☁️ غائم كلياً (Fully Cloudy)',
                     sideTitle: 'التفاصيل والشرح',
@@ -10920,7 +10919,7 @@ z
                 'en': {
                     langBtn: '🌐 عربي', tab0: 'Root Diagram', tab1: 'AI Block', tab2: 'Water Tank',
                     simPlay: '▶ Run Simulation', simStop: '■ Stop', simReplay: '▶ Replay', simPause: '⏸ Pause', phaseOf: 'Phase {0} / {1}',
-                    ctrl: '⚙️ Control Center', cam: '🎥 Auto Camera', sidebar: '🗂️ Show Sidebar', dark: '🌙 Dark Mode', voice: '🔊 Voice Narration',
+                    ctrl: '⚙️ Control Center', cam: '🎥 Auto Camera', sidebar: '🗂️ Show Sidebar', dark: '🌙 Dark Mode',
                     speed: '⏱️ Simulation Speed', png: '📥 Export 8K PNG', svg: '📥 Export SVG',
                     weatherTitle: '🌤️ Weather Condition', weatherSunny: '☀️ Sunny', weatherPCloudy: '⛅ Partially Cloudy', weatherFCloudy: '☁️ Fully Cloudy',
                     sideTitle: 'Details & Explanation',
@@ -10950,7 +10949,6 @@ z
             if(labels[0]) labels[0].lastChild.textContent = ' ' + t.cam;
             if(labels[1]) labels[1].lastChild.textContent = ' ' + t.sidebar;
             if(labels[2]) labels[2].lastChild.textContent = ' ' + t.dark;
-            if(labels[3]) labels[3].lastChild.textContent = ' ' + t.voice;
             document.querySelector('#ctrl-panel div').innerText = t.speed;
             const exports = document.querySelectorAll('.btn-export');
             exports[0].innerText = t.png;
@@ -11025,7 +11023,6 @@ z
                     <div id="info-title">${data.title}</div>
                     <div id="info-text">${text}</div>
                 `;
-                speakPhase(data.title, text);
             });
         }
 
@@ -11060,7 +11057,6 @@ z
         function stopSimulation() {
             simIntervals.forEach(clearTimeout);
             simIntervals = [];
-            if (window.speechSynthesis) window.speechSynthesis.cancel();
             clearAllFlows();
             currentPhase = 0;
             isPaused = false;
@@ -11095,32 +11091,7 @@ z
                 <div id="info-title" style="color: #F59E0B;">🔄 ${title}</div>
                 <div id="info-text">${text}</div>
             `;
-            speakPhase(title, text);
         }
-
-        function speakPhase(title, text) {
-            const voiceCb = document.getElementById('voiceNarration');
-            if (!voiceCb || !voiceCb.checked || !window.speechSynthesis) return;
-            window.speechSynthesis.cancel();
-            
-            const clean = text.replace(/<[^>]*>/g, '').replace(/&[^;]+;/g, ' ').trim();
-            const utterance = new SpeechSynthesisUtterance(title + '. ' + clean);
-            
-            const isAr = lang === 'ar';
-            utterance.lang = isAr ? 'ar-SA' : 'en-US';
-            utterance.rate = isAr ? 0.9 : 0.95; // Slower is more natural
-            utterance.pitch = 1.0;
-
-            const voices = window.speechSynthesis.getVoices();
-            if (voices.length > 0) {
-                const pfx = isAr ? 'ar' : 'en';
-                let bestVoice = voices.find(v => v.lang.startsWith(pfx) && (v.name.includes('Google') || v.name.includes('Online') || v.name.includes('Natural')));
-                if (!bestVoice) bestVoice = voices.find(v => v.lang.startsWith(pfx));
-                if (bestVoice) utterance.voice = bestVoice;
-            }
-            window.speechSynthesis.speak(utterance);
-        }
-        if (window.speechSynthesis) window.speechSynthesis.onvoiceschanged = () => window.speechSynthesis.getVoices();
 
         let flyToTimeout = null;
         function flyTo(x, y, scale, index) {
@@ -11245,17 +11216,8 @@ z
             const nextPhase = currentPhase + 1;
             if (nextPhase > TOTAL_PHASES) return;
             const speed = parseFloat(document.getElementById('simSpeed').value) || 1;
+            const delay = 3000 / speed;
             
-            let delay = 3000 / speed;
-            if (currentPhase > 0) {
-                const t = window._L || {};
-                const currentText = t['p' + currentPhase] || '';
-                const isVoiceOn = document.getElementById('voiceNarration') && document.getElementById('voiceNarration').checked;
-                // Provide enough time to finish reading the current phase text (~80ms per character)
-                const baseDelay = isVoiceOn ? Math.max(3000, currentText.length * 80) : 3000;
-                delay = baseDelay / speed;
-            }
-
             simIntervals.push(setTimeout(() => {
                 executePhase(nextPhase);
                 if (nextPhase < TOTAL_PHASES && isSimulating) {
