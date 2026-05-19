@@ -24,7 +24,7 @@
         .svg-container.active { display: flex; }
         
         /* SVG wrapper for zoom/pan transform */
-        .zoom-wrapper { transform-origin: center; transition: transform 0.1s ease-out; width: 100%; height: 100%; display: flex; justify-content: center; align-items: center; }
+        .zoom-wrapper { transform-origin: center; transition: transform 0.1s ease-out; will-change: transform; width: 100%; height: 100%; display: flex; justify-content: center; align-items: center; }
         
         svg { max-width: 95%; max-height: 95%; box-shadow: 0 10px 25px rgba(0,0,0,0.05); border-radius: 8px; background: white; }
         
@@ -117,6 +117,7 @@
                     <label><input type="checkbox" id="autoCam" checked> 🎥 كاميرا التتبع التلقائي</label>
                     <label><input type="checkbox" id="toggleSidebar" checked onchange="document.getElementById('sidebar').style.display = this.checked ? 'flex' : 'none'"> 🗂️ عرض شريط الشرح</label>
                     <label><input type="checkbox" id="toggleDark" onchange="document.body.classList.toggle('dark', this.checked)"> 🌙 الوضع الليلي</label>
+                    <label><input type="checkbox" id="voiceNarration"> 🔊 الشرح الصوتي</label>
                     <hr style="margin: 10px 0; border: 0; border-top: 1px solid #E2E8F0; width: 100%;">
                     <div style="margin-bottom: 5px; font-weight: bold; color: #475569; font-size: 13px;" id="weatherTitle">🌤️ حالة الطقس (اختيار اليوم)</div>
                     <select id="weatherSelect" style="width: 100%; padding: 6px; margin-bottom: 10px; border-radius: 4px; border: 1px solid #CBD5E1; font-family: inherit; background: #F8FAFC; color: #334155; outline: none;" onchange="applyWeatherEffects()">
@@ -10881,7 +10882,7 @@ z
         window._L = {
             langBtn: '🌐 English', tab0: 'المخطط الرئيسي (Root)', tab1: 'الذكاء الاصطناعي (AI Block)', tab2: 'خزان المياه (Water Tank)',
             simPlay: '▶ تشغيل المحاكاة', simStop: '■ إيقاف المحاكاة', simReplay: '▶ إعادة المحاكاة', simPause: '⏸ إيقاف مؤقت', phaseOf: 'المرحلة {0} من {1}',
-            ctrl: '⚙️ مركز التحكم', cam: '🎥 كاميرا التتبع التلقائي', sidebar: '🗂️ عرض شريط الشرح', dark: '🌙 الوضع الليلي',
+            ctrl: '⚙️ مركز التحكم', cam: '🎥 كاميرا التتبع التلقائي', sidebar: '🗂️ عرض شريط الشرح', dark: '🌙 الوضع الليلي', voice: '🔊 الشرح الصوتي',
             speed: '⏱️ سرعة المحاكاة', png: '📥 تصدير 8K PNG', svg: '📥 تصدير SVG الأصلي',
             weatherTitle: '🌤️ حالة الطقس', weatherSunny: '☀️ يوم مشمس (Sunny)', weatherPCloudy: '⛅ غائم جزئياً (Partially Cloudy)', weatherFCloudy: '☁️ غائم كلياً (Fully Cloudy)',
             sideTitle: 'التفاصيل والشرح',
@@ -10902,7 +10903,7 @@ z
                 'ar': {
                     langBtn: '🌐 English', tab0: 'المخطط الرئيسي (Root)', tab1: 'الذكاء الاصطناعي (AI Block)', tab2: 'خزان المياه (Water Tank)',
                     simPlay: '▶ تشغيل المحاكاة', simStop: '■ إيقاف المحاكاة', simReplay: '▶ إعادة المحاكاة', simPause: '⏸ إيقاف مؤقت', phaseOf: 'المرحلة {0} من {1}',
-                    ctrl: '⚙️ مركز التحكم', cam: '🎥 كاميرا التتبع التلقائي', sidebar: '🗂️ عرض شريط الشرح', dark: '🌙 الوضع الليلي',
+                    ctrl: '⚙️ مركز التحكم', cam: '🎥 كاميرا التتبع التلقائي', sidebar: '🗂️ عرض شريط الشرح', dark: '🌙 الوضع الليلي', voice: '🔊 الشرح الصوتي',
                     speed: '⏱️ سرعة المحاكاة', png: '📥 تصدير 8K PNG', svg: '📥 تصدير SVG الأصلي',
                     weatherTitle: '🌤️ حالة الطقس', weatherSunny: '☀️ يوم مشمس (Sunny)', weatherPCloudy: '⛅ غائم جزئياً (Partially Cloudy)', weatherFCloudy: '☁️ غائم كلياً (Fully Cloudy)',
                     sideTitle: 'التفاصيل والشرح',
@@ -10919,7 +10920,7 @@ z
                 'en': {
                     langBtn: '🌐 عربي', tab0: 'Root Diagram', tab1: 'AI Block', tab2: 'Water Tank',
                     simPlay: '▶ Run Simulation', simStop: '■ Stop', simReplay: '▶ Replay', simPause: '⏸ Pause', phaseOf: 'Phase {0} / {1}',
-                    ctrl: '⚙️ Control Center', cam: '🎥 Auto Camera', sidebar: '🗂️ Show Sidebar', dark: '🌙 Dark Mode',
+                    ctrl: '⚙️ Control Center', cam: '🎥 Auto Camera', sidebar: '🗂️ Show Sidebar', dark: '🌙 Dark Mode', voice: '🔊 Voice Narration',
                     speed: '⏱️ Simulation Speed', png: '📥 Export 8K PNG', svg: '📥 Export SVG',
                     weatherTitle: '🌤️ Weather Condition', weatherSunny: '☀️ Sunny', weatherPCloudy: '⛅ Partially Cloudy', weatherFCloudy: '☁️ Fully Cloudy',
                     sideTitle: 'Details & Explanation',
@@ -10949,6 +10950,7 @@ z
             if(labels[0]) labels[0].lastChild.textContent = ' ' + t.cam;
             if(labels[1]) labels[1].lastChild.textContent = ' ' + t.sidebar;
             if(labels[2]) labels[2].lastChild.textContent = ' ' + t.dark;
+            if(labels[3]) labels[3].lastChild.textContent = ' ' + t.voice;
             document.querySelector('#ctrl-panel div').innerText = t.speed;
             const exports = document.querySelectorAll('.btn-export');
             exports[0].innerText = t.png;
@@ -11056,6 +11058,7 @@ z
         function stopSimulation() {
             simIntervals.forEach(clearTimeout);
             simIntervals = [];
+            if (window.speechSynthesis) window.speechSynthesis.cancel();
             clearAllFlows();
             currentPhase = 0;
             isPaused = false;
@@ -11090,6 +11093,19 @@ z
                 <div id="info-title" style="color: #F59E0B;">🔄 ${title}</div>
                 <div id="info-text">${text}</div>
             `;
+            speakPhase(title, text);
+        }
+
+        function speakPhase(title, text) {
+            if (!document.getElementById('voiceNarration').checked) return;
+            if (!window.speechSynthesis) return;
+            window.speechSynthesis.cancel();
+            const clean = text.replace(/<[^>]*>/g, '').replace(/&[^;]+;/g, ' ');
+            const utterance = new SpeechSynthesisUtterance(title + '. ' + clean);
+            utterance.lang = lang === 'ar' ? 'ar-SA' : 'en-US';
+            utterance.rate = 1.05;
+            utterance.pitch = 1;
+            window.speechSynthesis.speak(utterance);
         }
 
         let flyToTimeout = null;
@@ -11172,12 +11188,10 @@ z
             const isNext = (n === currentPhase + 1);
             switchTab(0);
             if (isNext) {
-                // Additive: only add new phase flows (smooth, no flash)
                 const p = phasesDef[n - 1];
                 p.flows.forEach(f => addFlow(f.sel, f.type));
                 if (p.weather) applyWeatherEffects();
             } else {
-                // Full rebuild (backward or jump)
                 clearAllFlows();
                 for (let i = 0; i < n; i++) {
                     const p = phasesDef[i];
@@ -11185,8 +11199,11 @@ z
                     if (p.weather) applyWeatherEffects();
                 }
             }
+            // Defer camera movement to next frame for smooth transition
             const p = phasesDef[n - 1];
-            flyTo(p.cam[0], p.cam[1], p.cam[2], p.cam[3]);
+            requestAnimationFrame(() => {
+                flyTo(p.cam[0], p.cam[1], p.cam[2], p.cam[3]);
+            });
             const t = window._L || {};
             let title = t['p' + n + 't'] || '';
             let text = t['p' + n] || '';
