@@ -11020,10 +11020,12 @@ z
                 path.classList.add('active-path');
                 currentActive = path;
                 const data = explanations[id];
+                const text = lang==='en' && data.text_en ? data.text_en : data.text;
                 document.getElementById('info-content').innerHTML = `
                     <div id="info-title">${data.title}</div>
-                    <div id="info-text">${lang==='en' && data.text_en ? data.text_en : data.text}</div>
+                    <div id="info-text">${text}</div>
                 `;
+                speakPhase(data.title, text);
             });
         }
 
@@ -11097,16 +11099,28 @@ z
         }
 
         function speakPhase(title, text) {
-            if (!document.getElementById('voiceNarration').checked) return;
-            if (!window.speechSynthesis) return;
+            const voiceCb = document.getElementById('voiceNarration');
+            if (!voiceCb || !voiceCb.checked || !window.speechSynthesis) return;
             window.speechSynthesis.cancel();
-            const clean = text.replace(/<[^>]*>/g, '').replace(/&[^;]+;/g, ' ');
+            
+            const clean = text.replace(/<[^>]*>/g, '').replace(/&[^;]+;/g, ' ').trim();
             const utterance = new SpeechSynthesisUtterance(title + '. ' + clean);
-            utterance.lang = lang === 'ar' ? 'ar-SA' : 'en-US';
-            utterance.rate = 1.05;
-            utterance.pitch = 1;
+            
+            const isAr = lang === 'ar';
+            utterance.lang = isAr ? 'ar-SA' : 'en-US';
+            utterance.rate = isAr ? 0.9 : 0.95; // Slower is more natural
+            utterance.pitch = 1.0;
+
+            const voices = window.speechSynthesis.getVoices();
+            if (voices.length > 0) {
+                const pfx = isAr ? 'ar' : 'en';
+                let bestVoice = voices.find(v => v.lang.startsWith(pfx) && (v.name.includes('Google') || v.name.includes('Online') || v.name.includes('Natural')));
+                if (!bestVoice) bestVoice = voices.find(v => v.lang.startsWith(pfx));
+                if (bestVoice) utterance.voice = bestVoice;
+            }
             window.speechSynthesis.speak(utterance);
         }
+        if (window.speechSynthesis) window.speechSynthesis.onvoiceschanged = () => window.speechSynthesis.getVoices();
 
         let flyToTimeout = null;
         function flyTo(x, y, scale, index) {
@@ -11231,7 +11245,17 @@ z
             const nextPhase = currentPhase + 1;
             if (nextPhase > TOTAL_PHASES) return;
             const speed = parseFloat(document.getElementById('simSpeed').value) || 1;
-            const delay = 3000 / speed;
+            
+            let delay = 3000 / speed;
+            if (currentPhase > 0) {
+                const t = window._L || {};
+                const currentText = t['p' + currentPhase] || '';
+                const isVoiceOn = document.getElementById('voiceNarration') && document.getElementById('voiceNarration').checked;
+                // Provide enough time to finish reading the current phase text (~80ms per character)
+                const baseDelay = isVoiceOn ? Math.max(3000, currentText.length * 80) : 3000;
+                delay = baseDelay / speed;
+            }
+
             simIntervals.push(setTimeout(() => {
                 executePhase(nextPhase);
                 if (nextPhase < TOTAL_PHASES && isSimulating) {
