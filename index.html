@@ -56,6 +56,14 @@
             transition: 0.3s;
         }
         
+        /* Weather Effects & Camera */
+        .flying-cam { transition: transform 2s cubic-bezier(0.25, 0.1, 0.25, 1) !important; }
+        .weather-sunny { stroke: #FBBF24 !important; stroke-width: 5px !important; filter: drop-shadow(0 0 10px rgba(251,191,36,0.95)) drop-shadow(0 0 20px rgba(251,191,36,0.5)) !important; }
+        .weather-pcloudy { stroke: #F59E0B !important; stroke-width: 4px !important; filter: drop-shadow(0 0 6px rgba(245,158,11,0.6)) !important; }
+        .weather-fcloudy { stroke: #94A3B8 !important; stroke-width: 3px !important; filter: drop-shadow(0 0 3px rgba(148,163,184,0.4)) !important; animation-duration: 1.5s !important; }
+        .bg-fcloudy { filter: brightness(0.75) saturate(0.7); transition: filter 2s ease; }
+        .bg-pcloudy { filter: brightness(0.9) saturate(0.85); transition: filter 2s ease; }
+        
         /* Control Center Styles */
         .btn-ctrl { background: #F1F5F9; color: #475569; border: 1px solid #CBD5E1; padding: 10px 15px; border-radius: 6px; font-weight: bold; cursor: pointer; transition: 0.2s; }
         .btn-ctrl:hover { background: #E2E8F0; }
@@ -66,6 +74,13 @@
         .btn-export { background: #2563EB; color: white; border: none; padding: 8px; border-radius: 4px; cursor: pointer; width: 100%; font-weight: bold; transition: 0.2s; }
         .btn-export:hover { opacity: 0.9; transform: scale(1.02); }
         
+        /* Simulation Controls */
+        .sim-controls { display: flex; align-items: center; gap: 6px; margin-left: 20px; }
+        .btn-step { background: #F1F5F9; color: #475569; border: 1px solid #CBD5E1; width: 36px; height: 36px; border-radius: 6px; font-size: 16px; cursor: pointer; transition: 0.2s; display: flex; align-items: center; justify-content: center; }
+        .btn-step:hover:not(:disabled) { background: #E2E8F0; transform: scale(1.1); }
+        .btn-step:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
+        #phaseIndicator { white-space: nowrap; font-weight: bold; color: #64748B; font-size: 13px; margin-right: 10px; }
+
         /* Dark Mode */
         body.dark { background: #0F172A; color: #E2E8F0; }
         body.dark #sidebar { background: #1E293B; box-shadow: -2px 0 10px rgba(0,0,0,0.4); }
@@ -83,6 +98,9 @@
         body.dark .ctrl-panel { background: #1E293B; border-color: #334155; }
         body.dark .ctrl-panel label { color: #CBD5E1; }
         body.dark svg { background: #1E293B; box-shadow: 0 10px 25px rgba(0,0,0,0.3); }
+        body.dark .btn-step { background: #334155; color: #E2E8F0; border-color: #475569; }
+        body.dark .btn-step:hover:not(:disabled) { background: #475569; }
+        body.dark #phaseIndicator { color: #94A3B8; }
     </style>
 </head>
 <body>
@@ -100,6 +118,13 @@
                     <label><input type="checkbox" id="toggleSidebar" checked onchange="document.getElementById('sidebar').style.display = this.checked ? 'flex' : 'none'"> 🗂️ عرض شريط الشرح</label>
                     <label><input type="checkbox" id="toggleDark" onchange="document.body.classList.toggle('dark', this.checked)"> 🌙 الوضع الليلي</label>
                     <hr style="margin: 10px 0; border: 0; border-top: 1px solid #E2E8F0; width: 100%;">
+                    <div style="margin-bottom: 5px; font-weight: bold; color: #475569; font-size: 13px;" id="weatherTitle">🌤️ حالة الطقس (اختيار اليوم)</div>
+                    <select id="weatherSelect" style="width: 100%; padding: 6px; margin-bottom: 10px; border-radius: 4px; border: 1px solid #CBD5E1; font-family: inherit; background: #F8FAFC; color: #334155; outline: none;" onchange="applyWeatherEffects()">
+                        <option value="0">☀️ اليوم الأول - مشمس (Day 1 - Sunny)</option>
+                        <option value="1">⛅ اليوم الثاني - غائم جزئياً (Day 2 - Partially Cloudy)</option>
+                        <option value="2">☁️ اليوم الثالث - غائم كلياً (Day 3 - Fully Cloudy)</option>
+                    </select>
+                    <hr style="margin: 10px 0; border: 0; border-top: 1px solid #E2E8F0; width: 100%;">
                     <div style="margin-bottom: 5px; font-weight: bold; color: #475569; font-size: 13px;">⏱️ سرعة المحاكاة</div>
                     <input type="range" id="simSpeed" min="0.5" max="2" step="0.5" value="1" style="width: 100%; direction: ltr;">
                     <hr style="margin: 10px 0; border: 0; border-top: 1px solid #E2E8F0; width: 100%;">
@@ -114,9 +139,14 @@
                     </div>
                 </div>
             </div>
-            <button id="simBtn" class="btn-sim" onclick="toggleSimulation()">▶ تشغيل المحاكاة</button>
+            <div class="sim-controls">
+                <button class="btn-step" id="stepBwd" onclick="stepBackward()" disabled>⏮</button>
+                <button id="simBtn" class="btn-sim" onclick="toggleSimulation()">▶ تشغيل المحاكاة</button>
+                <button class="btn-step" id="stepFwd" onclick="stepForward()">⏭</button>
+                <span id="phaseIndicator" style="display:none;"></span>
+            </div>
         </div>
-        
+
         <div class="svg-container active" id="tab0"><div class="zoom-wrapper" id="zoom0">
 <!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN"
   "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
@@ -10843,15 +10873,38 @@ z
         let isSimulating = false;
         let simIntervals = [];
         let lang = 'ar';
+        let currentPhase = 0;
+        let isPaused = false;
+        const TOTAL_PHASES = 7;
+
+        // Initialize window._L with Arabic defaults so simulation text works from first run
+        window._L = {
+            langBtn: '🌐 English', tab0: 'المخطط الرئيسي (Root)', tab1: 'الذكاء الاصطناعي (AI Block)', tab2: 'خزان المياه (Water Tank)',
+            simPlay: '▶ تشغيل المحاكاة', simStop: '■ إيقاف المحاكاة', simReplay: '▶ إعادة المحاكاة', simPause: '⏸ إيقاف مؤقت', phaseOf: 'المرحلة {0} من {1}',
+            ctrl: '⚙️ مركز التحكم', cam: '🎥 كاميرا التتبع التلقائي', sidebar: '🗂️ عرض شريط الشرح', dark: '🌙 الوضع الليلي',
+            speed: '⏱️ سرعة المحاكاة', png: '📥 تصدير 8K PNG', svg: '📥 تصدير SVG الأصلي',
+            weatherTitle: '🌤️ حالة الطقس', weatherSunny: '☀️ يوم مشمس (Sunny)', weatherPCloudy: '⛅ غائم جزئياً (Partially Cloudy)', weatherFCloudy: '☁️ غائم كلياً (Fully Cloudy)',
+            sideTitle: 'التفاصيل والشرح',
+            ph: 'انقر على أي عنصر أو بلوك مهما كان صغيراً لعرض شرحه التفصيلي.<br><br>اضغط على "تشغيل المحاكاة" لتتبع مسار الإشارات والطاقة عبر الأسلاك والبلوكات.<br><br>💡 يمكنك استخدام عجلة الفأرة (Scroll) للتكبير والسحب للتحريك.',
+            stopPh: 'تم إيقاف المحاكاة. انقر على البلوكات للتصفح الحُر.',
+            p1t: 'المرحلة 1: تجميع الإشارات', p1: 'يتم التقاط قراءات الإشعاع الشمسي والحرارة وتمريرها عبر الـ Multiplexers نحو الطبقة الفيزيائية. كما يتم اختيار اليوم المطلوب وارساله للذكاء الاصطناعي.',
+            p2t: 'المرحلة 2: التنبؤ (الذكاء الاصطناعي)', p2: 'يستقبل الذكاء الاصطناعي بيانات اليوم ويبدأ بحساب الإشعاع المتوقع GHI_pred وتمريره لمدير التحكم.',
+            p3t: 'المرحلة 3: التوجيه المرجعي', p3: 'يحسب المدير المرجعي MPC Manager التدفق المستهدف (Q_ref) ويرسله كإشارة تغذية أمامية (Feedforward) للعاكس مباشرة، وكهدف للمتحكم السفلي.',
+            p4t: 'المرحلة 4: الحسابات الرياضية (التحكم)', p4: 'يقوم متحكم MPC Controller بحل معادلات Optimization معقدة لضمان استقرار الخزان والمضخة معاً، ثم يصدر إشارة التحكم (Command) لمتحكم الفولتية.',
+            p5t: 'المرحلة 5: تشغيل المضخة وتدفق الطاقة', p5: 'يتم استخراج الطاقة من اللوح الشمسي P_pv، ثم تتولى الـ FOPID تنقية الطاقة الذاهبة للـ VFD لتشغيل المضخة وإنتاج التدفق Q_raw.',
+            p6t: 'المرحلة 6: موازنة الخزان والتغذية الراجعة', p6: 'يصل التدفق للخزان، وتُحسب الزيادة في المنسوب H(t). ثم تعود الإشارة كـ Feedback في المسار السفلي الطويل وتمر عبر الـ Delay استعداداً للثانية القادمة.',
+            p7t: 'اكتملت المحاكاة', p7: 'دورة التحكم اكتملت بنجاح. يمكنك إعادة التشغيل أو التصفح الحُر.'
+        };
 
         function toggleLanguage() {
             lang = lang === 'ar' ? 'en' : 'ar';
             const L = {
                 'ar': {
                     langBtn: '🌐 English', tab0: 'المخطط الرئيسي (Root)', tab1: 'الذكاء الاصطناعي (AI Block)', tab2: 'خزان المياه (Water Tank)',
-                    simPlay: '▶ تشغيل المحاكاة', simStop: '■ إيقاف المحاكاة', simReplay: '▶ إعادة المحاكاة',
+                    simPlay: '▶ تشغيل المحاكاة', simStop: '■ إيقاف المحاكاة', simReplay: '▶ إعادة المحاكاة', simPause: '⏸ إيقاف مؤقت', phaseOf: 'المرحلة {0} من {1}',
                     ctrl: '⚙️ مركز التحكم', cam: '🎥 كاميرا التتبع التلقائي', sidebar: '🗂️ عرض شريط الشرح', dark: '🌙 الوضع الليلي',
                     speed: '⏱️ سرعة المحاكاة', png: '📥 تصدير 8K PNG', svg: '📥 تصدير SVG الأصلي',
+                    weatherTitle: '🌤️ حالة الطقس', weatherSunny: '☀️ يوم مشمس (Sunny)', weatherPCloudy: '⛅ غائم جزئياً (Partially Cloudy)', weatherFCloudy: '☁️ غائم كلياً (Fully Cloudy)',
                     sideTitle: 'التفاصيل والشرح',
                     ph: 'انقر على أي عنصر أو بلوك مهما كان صغيراً لعرض شرحه التفصيلي.<br><br>اضغط على "تشغيل المحاكاة" لتتبع مسار الإشارات والطاقة عبر الأسلاك والبلوكات.<br><br>💡 يمكنك استخدام عجلة الفأرة (Scroll) للتكبير والسحب للتحريك.',
                     stopPh: 'تم إيقاف المحاكاة. انقر على البلوكات للتصفح الحُر.',
@@ -10865,9 +10918,10 @@ z
                 },
                 'en': {
                     langBtn: '🌐 عربي', tab0: 'Root Diagram', tab1: 'AI Block', tab2: 'Water Tank',
-                    simPlay: '▶ Run Simulation', simStop: '■ Stop', simReplay: '▶ Replay',
+                    simPlay: '▶ Run Simulation', simStop: '■ Stop', simReplay: '▶ Replay', simPause: '⏸ Pause', phaseOf: 'Phase {0} / {1}',
                     ctrl: '⚙️ Control Center', cam: '🎥 Auto Camera', sidebar: '🗂️ Show Sidebar', dark: '🌙 Dark Mode',
                     speed: '⏱️ Simulation Speed', png: '📥 Export 8K PNG', svg: '📥 Export SVG',
+                    weatherTitle: '🌤️ Weather Condition', weatherSunny: '☀️ Sunny', weatherPCloudy: '⛅ Partially Cloudy', weatherFCloudy: '☁️ Fully Cloudy',
                     sideTitle: 'Details & Explanation',
                     ph: 'Click any block to view its explanation.<br><br>Press "Run Simulation" to trace signal flow.<br><br>💡 Use mouse wheel to zoom, drag to pan.',
                     stopPh: 'Simulation stopped. Click blocks to browse.',
@@ -10887,8 +10941,10 @@ z
             document.querySelectorAll('.tab')[2].innerText = t.tab2;
             document.querySelector('.btn-ctrl').innerText = t.ctrl;
             const simBtn = document.getElementById('simBtn');
-            if (!isSimulating) simBtn.innerText = t.simPlay;
-            else simBtn.innerText = t.simStop;
+            if (isSimulating) simBtn.innerText = t.simPause;
+            else if (currentPhase >= TOTAL_PHASES) simBtn.innerText = t.simReplay;
+            else simBtn.innerText = t.simPlay;
+            updatePhaseUI();
             const labels = document.querySelectorAll('#ctrl-panel label');
             if(labels[0]) labels[0].lastChild.textContent = ' ' + t.cam;
             if(labels[1]) labels[1].lastChild.textContent = ' ' + t.sidebar;
@@ -10898,6 +10954,15 @@ z
             exports[0].innerText = t.png;
             exports[1].innerText = t.svg;
             document.querySelector('#sidebar h1').innerText = t.sideTitle;
+
+            const wSel = document.getElementById('weatherSelect');
+            if(wSel) {
+                document.getElementById('weatherTitle').innerText = t.weatherTitle;
+                wSel.options[0].text = t.weatherSunny;
+                wSel.options[1].text = t.weatherPCloudy;
+                wSel.options[2].text = t.weatherFCloudy;
+            }
+
             if (currentActive) {
                 const g = currentActive.closest('g') || currentActive.parentNode;
                 if (g && g.id && explanations[g.id]) {
@@ -10962,29 +11027,52 @@ z
 
         function toggleSimulation() {
             const btn = document.getElementById('simBtn');
-            const t = window._L || {simPlay: '▶ تشغيل المحاكاة', simStop: '■ إيقاف المحاكاة'};
+            const t = window._L || {};
             if (isSimulating) {
-                stopSimulation();
-                btn.innerHTML = t.simPlay;
-                btn.classList.remove('running');
+                // Pause
+                isPaused = true;
                 isSimulating = false;
+                simIntervals.forEach(clearTimeout);
+                simIntervals = [];
+                btn.innerHTML = t.simPlay || '▶ تشغيل المحاكاة';
+                btn.classList.remove('running');
+                updatePhaseUI();
             } else {
-                switchTab(0);
-                startRootSimulation();
-                btn.innerHTML = t.simStop;
-                btn.classList.add('running');
+                // Start or Resume
+                isPaused = false;
                 isSimulating = true;
+                switchTab(0);
+                btn.innerHTML = t.simPause || '⏸ إيقاف مؤقت';
+                btn.classList.add('running');
+                if (currentPhase === 0 || currentPhase >= TOTAL_PHASES) {
+                    currentPhase = 0;
+                    clearAllFlows();
+                }
+                autoAdvance();
+                updatePhaseUI();
             }
         }
 
         function stopSimulation() {
             simIntervals.forEach(clearTimeout);
             simIntervals = [];
-            document.querySelectorAll('.flowing-path, .flowing-block').forEach(el => {
-                el.classList.remove('flowing-path', 'flowing-block');
+            clearAllFlows();
+            currentPhase = 0;
+            isPaused = false;
+            isSimulating = false;
+            const t = window._L || {};
+            document.getElementById('info-content').innerHTML = '<div class="placeholder">' + (t.stopPh || 'تم إيقاف المحاكاة.') + '</div>';
+            document.getElementById('simBtn').innerHTML = t.simPlay || '▶ تشغيل المحاكاة';
+            document.getElementById('simBtn').classList.remove('running');
+            updatePhaseUI();
+        }
+
+        function clearAllFlows() {
+            document.querySelectorAll('.flowing-path, .flowing-block, .weather-sunny, .weather-pcloudy, .weather-fcloudy').forEach(el => {
+                el.classList.remove('flowing-path', 'flowing-block', 'weather-sunny', 'weather-pcloudy', 'weather-fcloudy');
             });
-            const t = window._L || {stopPh: 'تم إيقاف المحاكاة. انقر على البلوكات للتصفح الحُر.'};
-            document.getElementById('info-content').innerHTML = '<div class="placeholder">' + t.stopPh + '</div>';
+            const svgMain = document.querySelector('#tab0 svg');
+            if(svgMain) svgMain.classList.remove('bg-fcloudy', 'bg-pcloudy');
         }
 
         function addFlow(selector, type='path') {
@@ -11004,89 +11092,195 @@ z
             `;
         }
 
+        let flyToTimeout = null;
         function flyTo(x, y, scale, index) {
             if (!document.getElementById('autoCam').checked) return;
             const wrapper = document.getElementById('zoom' + index);
-            wrapper.style.transition = 'transform 1.5s ease-in-out';
+            wrapper.classList.add('flying-cam');
             scales[index] = scale;
             translates[index].x = x;
             translates[index].y = y;
             wrapper.style.transform = `translate(${x}px, ${y}px) scale(${scale})`;
             
-            // Remove transition after flight to allow snappy manual panning
-            setTimeout(() => {
-                wrapper.style.transition = 'transform 0.1s ease-out';
-            }, 1600);
+            if(flyToTimeout) clearTimeout(flyToTimeout);
+            flyToTimeout = setTimeout(() => {
+                wrapper.classList.remove('flying-cam');
+            }, 2100);
         }
 
-        function startRootSimulation() {
-            stopSimulation();
+        function applyWeatherEffects() {
+            if(currentPhase === 0) return;
+            const wVal = document.getElementById('weatherSelect').value;
+            const w = wVal === '0' ? 'sunny' : wVal === '1' ? 'pcloudy' : 'fcloudy';
+            
+            // Update day numbers in SVG dynamically
+            const dayNum = (parseInt(wVal) + 1).toString();
+            const text0 = document.getElementById('dynamic-day-text-0');
+            const text1 = document.getElementById('dynamic-day-text-1');
+            if(text0) text0.textContent = dayNum;
+            if(text1) text1.textContent = dayNum;
+
+            // Apply weather color to ALL flowing paths (GHI + input paths + block paths)
+            const paths = document.querySelectorAll('[id^="path_ghi"], [id^="path_in_"], [id^="path_temp"], [id^="path_day_"]');
+            paths.forEach(p => {
+                p.classList.remove('weather-sunny', 'weather-pcloudy', 'weather-fcloudy');
+                if(p.classList.contains('flowing-path')) p.classList.add('weather-' + w);
+            });
+            // Apply background dimming effect
+            const svgMain = document.querySelector('#tab0 svg');
+            if(svgMain) {
+                svgMain.classList.remove('bg-fcloudy', 'bg-pcloudy');
+                if(w === 'fcloudy') svgMain.classList.add('bg-fcloudy');
+                else if(w === 'pcloudy') svgMain.classList.add('bg-pcloudy');
+            }
+        }
+
+        const phasesDef = [
+            { cam: [250, 50, 1.3, 0], flows: [
+                { sel: '[id^="path_in_"], [id^="path_ghi"], [id^="path_temp"], [id^="path_day_"]', type: 'path' },
+                { sel: '#block_mux_1, #block_mux_2, #block_day_root', type: 'block' }
+            ], weather: true, tKey: 1 },
+            { cam: [150, -150, 1.4, 0], flows: [
+                { sel: '#block_ai', type: 'block' },
+                { sel: '[id^="path_ai_"]', type: 'path' }
+            ], tKey: 2 },
+            { cam: [-100, -150, 1.4, 0], flows: [
+                { sel: '#block_mpc_mgr', type: 'block' },
+                { sel: '[id^="path_mgr_"]', type: 'path' },
+                { sel: '[id^="path_clock"], #block_time_root', type: 'block' }
+            ], tKey: 3 },
+            { cam: [-300, -150, 1.4, 0], flows: [
+                { sel: '#block_mpc_ctrl', type: 'block' },
+                { sel: '[id^="path_mpc_cmd"]', type: 'path' }
+            ], tKey: 4 },
+            { cam: [-150, 150, 1.3, 0], flows: [
+                { sel: '#block_pv, #block_fopid, #block_vfd, #block_pump', type: 'block' },
+                { sel: '[id^="path_pv"], [id^="path_fopid"], [id^="path_vfd"], [id^="path_pump"]', type: 'path' }
+            ], tKey: 5 },
+            { cam: [-450, 50, 1.4, 0], flows: [
+                { sel: '#block_gain_root, #block_tank, #block_demand', type: 'block' },
+                { sel: '[id^="path_gain"], [id^="path_tank_out"], [id^="path_demand"]', type: 'path' },
+                { sel: '[id^="path_fb_"]', type: 'path' },
+                { sel: '#block_delay_root', type: 'block' }
+            ], tKey: 6 },
+            { cam: [0, 0, 1, 0], flows: [], tKey: 7 }
+        ];
+
+        function executePhase(n) {
+            if (n < 1) n = 1;
+            if (n > TOTAL_PHASES) n = TOTAL_PHASES;
+            const isNext = (n === currentPhase + 1);
             switchTab(0);
-            
-            const speed = parseFloat(document.getElementById('simSpeed').value) || 1;
-            const dt = 1 / speed;
-            
-            // Phase 1
-            simIntervals.push(setTimeout(() => {
-                flyTo(250, 50, 1.3, 0);
-                addFlow('[id^="path_in_"], [id^="path_ghi"], [id^="path_temp"], [id^="path_day_"]');
-                addFlow('#block_mux_1, #block_mux_2, #block_day_root', 'block');
-                const t = window._L || {}; updateSimText(t.p1t || 'المرحلة 1', t.p1 || '');
-            }, 500 * dt));
-
-            // Phase 2
-            simIntervals.push(setTimeout(() => {
-                flyTo(150, -150, 1.4, 0);
-                addFlow('#block_ai', 'block');
-                addFlow('[id^="path_ai_"]');
-                const t = window._L || {}; updateSimText(t.p2t || 'المرحلة 2', t.p2 || '');
-            }, 3500 * dt));
-
-            // Phase 3
-            simIntervals.push(setTimeout(() => {
-                flyTo(-100, -150, 1.4, 0);
-                addFlow('#block_mpc_mgr', 'block');
-                addFlow('[id^="path_mgr_"]');
-                addFlow('[id^="path_clock"], #block_time_root', 'block');
-                const t = window._L || {}; updateSimText(t.p3t || 'المرحلة 3', t.p3 || '');
-            }, 6500 * dt));
-
-            // Phase 4
-            simIntervals.push(setTimeout(() => {
-                flyTo(-300, -150, 1.4, 0);
-                addFlow('#block_mpc_ctrl', 'block');
-                addFlow('[id^="path_mpc_cmd"]');
-                const t = window._L || {}; updateSimText(t.p4t || 'المرحلة 4', t.p4 || '');
-            }, 9500 * dt));
-
-            // Phase 5
-            simIntervals.push(setTimeout(() => {
-                flyTo(-150, 150, 1.3, 0);
-                addFlow('#block_pv, #block_fopid, #block_vfd, #block_pump', 'block');
-                addFlow('[id^="path_pv"], [id^="path_fopid"], [id^="path_vfd"], [id^="path_pump"]');
-                const t = window._L || {}; updateSimText(t.p5t || 'المرحلة 5', t.p5 || '');
-            }, 12500 * dt));
-
-            // Phase 6
-            simIntervals.push(setTimeout(() => {
-                flyTo(-450, 50, 1.4, 0);
-                addFlow('#block_gain_root, #block_tank, #block_demand', 'block');
-                addFlow('[id^="path_gain"], [id^="path_tank_out"], [id^="path_demand"]');
-                addFlow('[id^="path_fb_"]');
-                addFlow('#block_delay_root', 'block');
-                const t = window._L || {}; updateSimText(t.p6t || 'المرحلة 6', t.p6 || '');
-            }, 15500 * dt));
-            
-            // Phase 7 Reset View
-            simIntervals.push(setTimeout(() => {
-                flyTo(0, 0, 1, 0);
-                const t = window._L || {};
-                updateSimText(t.p7t || 'اكتملت', t.p7 || '');
-                document.getElementById('simBtn').innerHTML = t.simReplay || '▶ إعادة المحاكاة';
-                document.getElementById('simBtn').classList.remove('running');
+            if (isNext) {
+                // Additive: only add new phase flows (smooth, no flash)
+                const p = phasesDef[n - 1];
+                p.flows.forEach(f => addFlow(f.sel, f.type));
+                if (p.weather) applyWeatherEffects();
+            } else {
+                // Full rebuild (backward or jump)
+                clearAllFlows();
+                for (let i = 0; i < n; i++) {
+                    const p = phasesDef[i];
+                    p.flows.forEach(f => addFlow(f.sel, f.type));
+                    if (p.weather) applyWeatherEffects();
+                }
+            }
+            const p = phasesDef[n - 1];
+            flyTo(p.cam[0], p.cam[1], p.cam[2], p.cam[3]);
+            const t = window._L || {};
+            let title = t['p' + n + 't'] || '';
+            let text = t['p' + n] || '';
+            if (n === 1) {
+                const wSel = document.getElementById('weatherSelect');
+                const wText = wSel ? wSel.options[wSel.selectedIndex].text : '';
+                title += (lang === 'en' ? ' — Weather: ' : ' — حالة الطقس: ') + wText;
+            }
+            updateSimText(title, text);
+            currentPhase = n;
+            if (n >= TOTAL_PHASES) {
                 isSimulating = false;
-            }, 21000 * dt));
+                isPaused = false;
+                simIntervals.forEach(clearTimeout);
+                simIntervals = [];
+                const btn = document.getElementById('simBtn');
+                btn.innerHTML = t.simReplay || '▶ إعادة المحاكاة';
+                btn.classList.remove('running');
+            }
+            updatePhaseUI();
         }
+
+        function autoAdvance() {
+            if (!isSimulating || isPaused) return;
+            const nextPhase = currentPhase + 1;
+            if (nextPhase > TOTAL_PHASES) return;
+            const speed = parseFloat(document.getElementById('simSpeed').value) || 1;
+            const delay = 3000 / speed;
+            simIntervals.push(setTimeout(() => {
+                executePhase(nextPhase);
+                if (nextPhase < TOTAL_PHASES && isSimulating) {
+                    autoAdvance();
+                }
+            }, nextPhase === 1 ? 500 / speed : delay));
+        }
+
+        function stepForward() {
+            if (currentPhase >= TOTAL_PHASES) return;
+            simIntervals.forEach(clearTimeout);
+            simIntervals = [];
+            isPaused = true;
+            isSimulating = false;
+            const t = window._L || {};
+            document.getElementById('simBtn').innerHTML = t.simPlay || '▶ تشغيل المحاكاة';
+            document.getElementById('simBtn').classList.remove('running');
+            executePhase(currentPhase + 1);
+        }
+
+        function stepBackward() {
+            if (currentPhase <= 0) return;
+            simIntervals.forEach(clearTimeout);
+            simIntervals = [];
+            isPaused = true;
+            isSimulating = false;
+            const t = window._L || {};
+            document.getElementById('simBtn').innerHTML = t.simPlay || '▶ تشغيل المحاكاة';
+            document.getElementById('simBtn').classList.remove('running');
+            if (currentPhase <= 1) {
+                clearAllFlows();
+                currentPhase = 0;
+                flyTo(0, 0, 1, 0);
+                document.getElementById('info-content').innerHTML = '<div class="placeholder">' + (t.ph || '') + '</div>';
+                updatePhaseUI();
+            } else {
+                executePhase(currentPhase - 1);
+            }
+        }
+
+        function updatePhaseUI() {
+            const indicator = document.getElementById('phaseIndicator');
+            const bwd = document.getElementById('stepBwd');
+            const fwd = document.getElementById('stepFwd');
+            if (currentPhase === 0) {
+                indicator.style.display = 'none';
+                bwd.disabled = true;
+                fwd.disabled = false;
+            } else {
+                indicator.style.display = 'inline';
+                const t = window._L || {};
+                const tmpl = t.phaseOf || 'المرحلة {0} من {1}';
+                indicator.textContent = tmpl.replace('{0}', currentPhase).replace('{1}', TOTAL_PHASES);
+                bwd.disabled = false;
+                fwd.disabled = (currentPhase >= TOTAL_PHASES);
+            }
+        }
+
+        // Keyboard Shortcuts
+        document.addEventListener('keydown', (e) => {
+            if (e.target.tagName === 'INPUT' || e.target.tagName === 'SELECT' || e.target.tagName === 'TEXTAREA') return;
+            if (e.code === 'Space') { e.preventDefault(); toggleSimulation(); }
+            else if (e.code === 'ArrowRight' || e.code === 'ArrowUp') { e.preventDefault(); stepForward(); }
+            else if (e.code === 'ArrowLeft' || e.code === 'ArrowDown') { e.preventDefault(); stepBackward(); }
+        });
+
         // Pan and Zoom Logic
         let scales = [1, 1, 1];
         let translates = [{x:0, y:0}, {x:0, y:0}, {x:0, y:0}];
@@ -11213,6 +11407,48 @@ z
                 panel.classList.remove('active');
             }
         });
+        
+        // Initialize dynamic Day text overlays on the SVG blocks
+        window.addEventListener('load', () => {
+            const createTextOverlay = (blockSelector, svgSelector, id) => {
+                const block = document.querySelector(blockSelector);
+                const svg = document.querySelector(svgSelector);
+                if(block && svg) {
+                    const bbox = block.getBBox();
+                    const cx = bbox.x + bbox.width / 2;
+                    const cy = bbox.y + bbox.height / 2;
+                    const g = document.createElementNS("http://www.w3.org/2000/svg", "g");
+                    const rect = document.createElementNS("http://www.w3.org/2000/svg", "rect");
+                    rect.setAttribute("x", bbox.x + 2);
+                    rect.setAttribute("y", bbox.y + 2);
+                    rect.setAttribute("width", bbox.width - 4);
+                    rect.setAttribute("height", bbox.height - 4);
+                    rect.setAttribute("fill", "#fef2f2"); // cover original path text
+                    const text = document.createElementNS("http://www.w3.org/2000/svg", "text");
+                    text.setAttribute("x", cx);
+                    text.setAttribute("y", cy + 5);
+                    text.setAttribute("font-family", "Arial, sans-serif");
+                    text.setAttribute("font-size", "14px");
+                    text.setAttribute("font-weight", "bold");
+                    text.setAttribute("fill", "#dc2626");
+                    text.setAttribute("text-anchor", "middle");
+                    text.id = id;
+                    text.textContent = "1";
+                    g.appendChild(rect);
+                    g.appendChild(text);
+                    svg.appendChild(g);
+                }
+            };
+            createTextOverlay('#block_day_root path', '#tab0 svg', 'dynamic-day-text-0');
+            createTextOverlay('#ai_day path', '#tab1 svg', 'dynamic-day-text-1');
+            
+            // Set initial value text
+            const wVal = document.getElementById('weatherSelect').value;
+            const dayNum = (parseInt(wVal) + 1).toString();
+            if(document.getElementById('dynamic-day-text-0')) document.getElementById('dynamic-day-text-0').textContent = dayNum;
+            if(document.getElementById('dynamic-day-text-1')) document.getElementById('dynamic-day-text-1').textContent = dayNum;
+        });
+
     </script>
 </body>
 </html>
