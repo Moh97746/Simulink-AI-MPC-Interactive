@@ -110,6 +110,14 @@ html_template = """<!DOCTYPE html>
             transition: 0.3s;
         }}
         
+        /* Weather Effects & Camera */
+        .flying-cam {{ transition: transform 1.5s ease-in-out !important; }}
+        .weather-sunny {{ stroke: #FBBF24 !important; filter: drop-shadow(0 0 8px rgba(251,191,36,0.9)) !important; }}
+        .weather-pcloudy {{ stroke: #F59E0B !important; filter: drop-shadow(0 0 5px rgba(245,158,11,0.6)) !important; }}
+        .weather-fcloudy {{ stroke: #94A3B8 !important; filter: drop-shadow(0 0 4px rgba(148,163,184,0.5)) !important; }}
+        .bg-fcloudy {{ filter: brightness(0.85); transition: filter 1.5s; }}
+
+        
         /* Control Center Styles */
         .btn-ctrl {{ background: #F1F5F9; color: #475569; border: 1px solid #CBD5E1; padding: 10px 15px; border-radius: 6px; font-weight: bold; cursor: pointer; transition: 0.2s; }}
         .btn-ctrl:hover {{ background: #E2E8F0; }}
@@ -153,6 +161,13 @@ html_template = """<!DOCTYPE html>
                     <label><input type="checkbox" id="autoCam" checked> 🎥 كاميرا التتبع التلقائي</label>
                     <label><input type="checkbox" id="toggleSidebar" checked onchange="document.getElementById('sidebar').style.display = this.checked ? 'flex' : 'none'"> 🗂️ عرض شريط الشرح</label>
                     <label><input type="checkbox" id="toggleDark" onchange="document.body.classList.toggle('dark', this.checked)"> 🌙 الوضع الليلي</label>
+                    <hr style="margin: 10px 0; border: 0; border-top: 1px solid #E2E8F0; width: 100%;">
+                    <div style="margin-bottom: 5px; font-weight: bold; color: #475569; font-size: 13px;" id="weatherTitle">🌤️ حالة الطقس</div>
+                    <select id="weatherSelect" style="width: 100%; padding: 6px; margin-bottom: 10px; border-radius: 4px; border: 1px solid #CBD5E1; font-family: inherit; background: #F8FAFC; color: #334155; outline: none;" onchange="applyWeatherEffects()">
+                        <option value="sunny">☀️ يوم مشمس (Sunny)</option>
+                        <option value="pcloudy">⛅ غائم جزئياً (Partially Cloudy)</option>
+                        <option value="fcloudy">☁️ غائم كلياً (Fully Cloudy)</option>
+                    </select>
                     <hr style="margin: 10px 0; border: 0; border-top: 1px solid #E2E8F0; width: 100%;">
                     <div style="margin-bottom: 5px; font-weight: bold; color: #475569; font-size: 13px;">⏱️ سرعة المحاكاة</div>
                     <input type="range" id="simSpeed" min="0.5" max="2" step="0.5" value="1" style="width: 100%; direction: ltr;">
@@ -198,6 +213,7 @@ html_template = """<!DOCTYPE html>
                     simPlay: '▶ تشغيل المحاكاة', simStop: '■ إيقاف المحاكاة', simReplay: '▶ إعادة المحاكاة',
                     ctrl: '⚙️ مركز التحكم', cam: '🎥 كاميرا التتبع التلقائي', sidebar: '🗂️ عرض شريط الشرح', dark: '🌙 الوضع الليلي',
                     speed: '⏱️ سرعة المحاكاة', png: '📥 تصدير 8K PNG', svg: '📥 تصدير SVG الأصلي',
+                    weatherTitle: '🌤️ حالة الطقس', weatherSunny: '☀️ يوم مشمس (Sunny)', weatherPCloudy: '⛅ غائم جزئياً (Partially Cloudy)', weatherFCloudy: '☁️ غائم كلياً (Fully Cloudy)',
                     sideTitle: 'التفاصيل والشرح',
                     ph: 'انقر على أي عنصر أو بلوك مهما كان صغيراً لعرض شرحه التفصيلي.<br><br>اضغط على "تشغيل المحاكاة" لتتبع مسار الإشارات والطاقة عبر الأسلاك والبلوكات.<br><br>💡 يمكنك استخدام عجلة الفأرة (Scroll) للتكبير والسحب للتحريك.',
                     stopPh: 'تم إيقاف المحاكاة. انقر على البلوكات للتصفح الحُر.',
@@ -214,6 +230,7 @@ html_template = """<!DOCTYPE html>
                     simPlay: '▶ Run Simulation', simStop: '■ Stop', simReplay: '▶ Replay',
                     ctrl: '⚙️ Control Center', cam: '🎥 Auto Camera', sidebar: '🗂️ Show Sidebar', dark: '🌙 Dark Mode',
                     speed: '⏱️ Simulation Speed', png: '📥 Export 8K PNG', svg: '📥 Export SVG',
+                    weatherTitle: '🌤️ Weather Condition', weatherSunny: '☀️ Sunny', weatherPCloudy: '⛅ Partially Cloudy', weatherFCloudy: '☁️ Fully Cloudy',
                     sideTitle: 'Details & Explanation',
                     ph: 'Click any block to view its explanation.<br><br>Press "Run Simulation" to trace signal flow.<br><br>💡 Use mouse wheel to zoom, drag to pan.',
                     stopPh: 'Simulation stopped. Click blocks to browse.',
@@ -244,6 +261,15 @@ html_template = """<!DOCTYPE html>
             exports[0].innerText = t.png;
             exports[1].innerText = t.svg;
             document.querySelector('#sidebar h1').innerText = t.sideTitle;
+            
+            const wSel = document.getElementById('weatherSelect');
+            if(wSel) {{
+                document.getElementById('weatherTitle').innerText = t.weatherTitle;
+                wSel.options[0].text = t.weatherSunny;
+                wSel.options[1].text = t.weatherPCloudy;
+                wSel.options[2].text = t.weatherFCloudy;
+            }}
+
             if (currentActive) {{
                 const g = currentActive.closest('g') || currentActive.parentNode;
                 if (g && g.id && explanations[g.id]) {{
@@ -326,9 +352,11 @@ html_template = """<!DOCTYPE html>
         function stopSimulation() {{
             simIntervals.forEach(clearTimeout);
             simIntervals = [];
-            document.querySelectorAll('.flowing-path, .flowing-block').forEach(el => {{
-                el.classList.remove('flowing-path', 'flowing-block');
+            document.querySelectorAll('.flowing-path, .flowing-block, .weather-sunny, .weather-pcloudy, .weather-fcloudy').forEach(el => {{
+                el.classList.remove('flowing-path', 'flowing-block', 'weather-sunny', 'weather-pcloudy', 'weather-fcloudy');
             }});
+            const svgMain = document.querySelector('#tab0 svg');
+            if(svgMain) svgMain.classList.remove('bg-fcloudy');
             const t = window._L || {{stopPh: 'تم إيقاف المحاكاة. انقر على البلوكات للتصفح الحُر.'}};
             document.getElementById('info-content').innerHTML = '<div class="placeholder">' + t.stopPh + '</div>';
         }}
@@ -350,19 +378,35 @@ html_template = """<!DOCTYPE html>
             `;
         }}
 
+        let flyToTimeout = null;
         function flyTo(x, y, scale, index) {{
             if (!document.getElementById('autoCam').checked) return;
             const wrapper = document.getElementById('zoom' + index);
-            wrapper.style.transition = 'transform 1.5s ease-in-out';
+            wrapper.classList.add('flying-cam');
             scales[index] = scale;
             translates[index].x = x;
             translates[index].y = y;
             wrapper.style.transform = `translate(${{x}}px, ${{y}}px) scale(${{scale}})`;
             
-            // Remove transition after flight to allow snappy manual panning
-            setTimeout(() => {{
-                wrapper.style.transition = 'transform 0.1s ease-out';
-            }}, 1600);
+            if(flyToTimeout) clearTimeout(flyToTimeout);
+            flyToTimeout = setTimeout(() => {{
+                wrapper.classList.remove('flying-cam');
+            }}, 1500);
+        }}
+
+        function applyWeatherEffects() {{
+            if(!isSimulating) return;
+            const w = document.getElementById('weatherSelect').value;
+            const paths = document.querySelectorAll('[id^="path_ghi"], [id^="path_in_"]');
+            paths.forEach(p => {{
+                p.classList.remove('weather-sunny', 'weather-pcloudy', 'weather-fcloudy');
+                if(p.classList.contains('flowing-path')) p.classList.add('weather-' + w);
+            }});
+            const svgMain = document.querySelector('#tab0 svg');
+            if(svgMain) {{
+                if(w === 'fcloudy') svgMain.classList.add('bg-fcloudy');
+                else svgMain.classList.remove('bg-fcloudy');
+            }}
         }}
 
         function startRootSimulation() {{
@@ -377,6 +421,7 @@ html_template = """<!DOCTYPE html>
                 flyTo(250, 50, 1.3, 0);
                 addFlow('[id^="path_in_"], [id^="path_ghi"], [id^="path_temp"], [id^="path_day_"]');
                 addFlow('#block_mux_1, #block_mux_2, #block_day_root', 'block');
+                applyWeatherEffects();
                 const t = window._L || {{}}; updateSimText(t.p1t || 'المرحلة 1', t.p1 || '');
             }}, 500 * dt));
 
